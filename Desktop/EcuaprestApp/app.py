@@ -42,7 +42,7 @@ def login():
 def logout():
     session.clear()
     flash('You have been logged out', 'info')
-    return redirect(url_for('login'))
+    return redirect(url_for('login.html'))
 
 @app.route('/dashboard')
 @login_required
@@ -72,11 +72,7 @@ def documentation():
 # Error handlers
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template('pages/samples/error-404.html'), 404
-
-@app.errorhandler(500)
-def server_error(e):
-    return render_template('pages/samples/error-500.html'), 500
+    return render_template('index.html'), 404
 
 if __name__ == '__main__':
     app.run(debug=True)

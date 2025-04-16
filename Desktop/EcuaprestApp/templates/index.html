@@ -20,6 +20,7 @@
   <!-- End plugin css for this page -->
   <!-- inject:css -->
   <link rel="stylesheet" href="static/css/vertical-layout-light/style.css">
+  <script src="https://cdn.tailwindcss.com"></script>
   <!-- endinject -->
   <link rel="shortcut icon" href="static/images/favicon.png" />
 </head>
@@ -639,6 +640,7 @@
                                         <th>Company</th>
                                         <th>Progress</th>
                                         <th>Status</th>
+                                        <th>Accion</th>
                                       </tr>
                                     </thead>
                                     <tbody>
@@ -674,6 +676,11 @@
                                           </div>
                                         </td>
                                         <td><div class="badge badge-opacity-warning">In progress</div></td>
+                                        <td class="px-6 py-4 text-center">
+                                          <a href="{{ url_for('clientes') }}" class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-sm px-4 py-1.5 transition duration-200">
+                                            Ver más
+                                          </a>
+                                        </td>
                                       </tr>
                                       <tr>
                                         <td>
@@ -707,6 +714,11 @@
                                           </div>
                                         </td>
                                         <td><div class="badge badge-opacity-warning">In progress</div></td>
+                                        <td class="px-6 py-4 text-center">
+                                          <a href="/cliente/1" class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-sm px-4 py-1.5 transition duration-200">
+                                            Ver más
+                                          </a>
+                                        </td>
                                       </tr>
                                       <tr>
                                         <td>
@@ -740,6 +752,11 @@
                                           </div>
                                         </td>
                                         <td><div class="badge badge-opacity-warning">In progress</div></td>
+                                        <td class="px-6 py-4 text-center">
+                                          <a href="/cliente/1" class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-sm px-4 py-1.5 transition duration-200">
+                                            Ver más
+                                          </a>
+                                        </td>
                                       </tr>
                                       <tr>
                                         <td>
@@ -773,6 +790,11 @@
                                           </div>
                                         </td>
                                         <td><div class="badge badge-opacity-danger">Pending</div></td>
+                                        <td class="px-6 py-4 text-center">
+                                          <a href="/cliente/1" class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-sm px-4 py-1.5 transition duration-200">
+                                            Ver más
+                                          </a>
+                                        </td>
                                       </tr>
                                       <tr>
                                         <td>
@@ -806,6 +828,11 @@
                                           </div>
                                         </td>
                                         <td><div class="badge badge-opacity-success">Completed</div></td>
+                                        <td class="px-6 py-4 text-center">
+                                          <a href="/Clientes" class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-sm px-4 py-1.5 transition duration-200">
+                                            Ver más
+                                          </a>
+                                        </td>
                                       </tr>
                                     </tbody>
                                   </table>

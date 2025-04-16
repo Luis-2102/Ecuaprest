@@ -69,6 +69,10 @@ def tables():
 def documentation():
     return render_template('pages/documentation/index.html')
 
+@app.route('/Clientes')
+def clientes():
+    return render_template('clientes.html')
+
 # Error handlers
 @app.errorhandler(404)
 def page_not_found(e):

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Clientes | StarAdmin Style</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+  <!-- Contenedor principal -->
+  <div class="p-6 sm:p-10">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Clientes</h1>
+
+    <!-- Card estilo StarAdmin -->
+    <div class="bg-white rounded-xl shadow-md p-4">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Nombre</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Cedula</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Correo</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Cuenta</th>
+              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Estado</th>
+              <th class="px-6 py-3 text-center text-sm font-semibold text-gray-600">Acción</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-100">
+            <!-- Cliente 1 -->
+            <tr class="hover:bg-gray-50 transition">
+              <td class="px-6 py-4 text-sm text-gray-800">Juan Pérez</td>
+              <td class="px-6 py-4 text-sm text-gray-800">1314840206</td>
+              <td class="px-6 py-4 text-sm text-gray-800">juan@example.com</td>
+              <td class="px-6 py-4 text-sm text-gray-800">987654321</td>
+              <td class="px-6 py-4 text-sm">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  Activo
+                </span>
+              </td>
+              <td class="px-6 py-4 text-center">
+                <a href="/cliente/1" class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-sm px-4 py-1.5 transition duration-200">
+                  Ver más
+                </a>
+              </td>
+            </tr>
+            <!-- Cliente 2 -->
+            <tr class="hover:bg-gray-50 transition">
+              <td class="px-6 py-4 text-sm text-gray-800">María López</td>
+              <td class="px-6 py-4 text-sm text-gray-800">1314840206</td>
+              <td class="px-6 py-4 text-sm text-gray-800">maria@example.com</td>
+              <td class="px-6 py-4 text-sm text-gray-800">923456789</td>
+              <td class="px-6 py-4 text-sm">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                  Pendiente
+                </span>
+              </td>
+              <td class="px-6 py-4 text-center">
+                <a href="/cliente/2" class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-sm px-4 py-1.5 transition duration-200">
+                  Ver más
+                </a>
+              </td>
+            </tr>
+            <!-- Puedes duplicar más filas aquí -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

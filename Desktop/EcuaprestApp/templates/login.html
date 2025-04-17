@@ -34,6 +34,17 @@
               </div>
               <h4>Hello! let's get started</h4>
               <h6 class="fw-light">Sign in to continue.</h6>
+              <!-- AQUI LOS MENSAJES FLASH -->
+              {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                  {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show mt-3" role="alert">
+                      {{ message }}
+                      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                  {% endfor %}
+                {% endif %}
+              {% endwith %}
               <form class="pt-3" method="POST" action="{{ url_for('login') }}">
                 <div class="form-group">
                   <input type="input" class="form-control form-control-lg" name="username" placeholder="Username">

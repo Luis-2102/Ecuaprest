@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import os
 from functools import wraps
-from models import db, Cliente  
+from models import db, Cliente, Administrador 
 from flask import jsonify
 from config import Config
 
@@ -40,16 +40,15 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        
-        # This is a placeholder - in a real app, you would validate against a database
-        if username == 'admin' and password == 'password':
-            session['user_id'] = 1
-            session['username'] = username
-            flash('Login successful!', 'success')
+        admin = Administrador.query.filter_by(nombre=username, clave=password).first()
+
+        if admin:
+            session['admin_id'] = admin.id
+            session['admin_nombre'] = admin.nombre
+            flash('Inicio de sesión exitoso', 'success')
             return redirect(url_for('index'))
         else:
-            flash('Invalid username or password', 'danger')
-    
+            flash('Correo o clave incorrectos', 'danger')
     return render_template('login.html')
 
 
@@ -113,16 +112,27 @@ def documentation():
 @app.route('/Clientes')
 @login_required
 def clientes():
-    cuenta = request.args.get('cuenta')  # Toma el valor del filtro si se envió
-
-    if cuenta:
-        # Si hay filtro, busca coincidencias por número de cuenta
-        lista_clientes = Cliente.query.filter(Cliente.numero_cuenta.ilike(f"%{cuenta}%")).all()
-    else:
-        # Si no hay filtro, muestra todos los clientes
-        lista_clientes = Cliente.query.all()
-
+    lista_clientes = Cliente.query.all()
     return render_template('clientes.html', clientes=lista_clientes)
+
+@app.route('/buscar_clientes')
+@login_required
+def buscar_clientes():
+    cuenta = request.args.get('cuenta', '')
+    clientes = Cliente.query.filter(Cliente.numero_cuenta.ilike(f"%{cuenta}%")).all()
+
+    data = [
+        {
+            'name': c.name,
+            'cedula': c.cedula,
+            'correo': c.correo,
+            'numero_cuenta': c.numero_cuenta,
+            'id': c.id
+        }
+        for c in clientes
+    ]
+    return jsonify(data)
+
 
 
 # Error handlers

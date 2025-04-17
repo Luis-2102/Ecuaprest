@@ -46,7 +46,9 @@
       <div class="navbar-menu-wrapper d-flex align-items-top">
         <ul class="navbar-nav">
           <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
-            <h1 class="welcome-text">Bienvenido, <span class="text-black fw-bold">--Nombre--</span></h1>
+            {% if session['admin_nombre'] %}
+              <h1 class="welcome-text">Bienvenido, <span class="text-black fw-bold">--{{ session['admin_nombre'] }}--</span></h1>
+            {% endif %}
             <h3 class="welcome-sub-text">Your performance summary this week </h3>
           </li>
         </ul>
@@ -183,10 +185,13 @@
                 <div class="d-sm-flex align-items-center justify-content-between border-bottom">
                   <ul class="nav nav-tabs" role="tablist">
                     <li class="nav-item">
-                      <a class="nav-link active ps-0" id="home-tab" data-bs-toggle="tab" href="#overview" role="tab"
+                      <a class="nav-link active ps-0" id="home-tab"  href="{{ url_for('index') }}" role="tab"
                         aria-controls="overview" aria-selected="true">Panel</a>
                     </li>
-
+                    <li class="nav-item">
+                      <a class="nav-link active ps-0" id="cliente-tab"  href="{{ url_for('clientes') }}" role="tab"
+                        aria-controls="overview" aria-selected="true">Clientes</a>
+                    </li>
                   </ul>
                   <div>
                     <div class="btn-wrapper">

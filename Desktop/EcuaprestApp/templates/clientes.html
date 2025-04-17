@@ -1,60 +1,94 @@
 {% extends "base.html" %}
+
 {% block contenido %}
-  <div class="p-6 sm:p-10">
-    <h1 class="text-2xl font-bold text-gray-800 mb-6">Clientes</h1>
+<div class="p-6 sm:p-10">
+  <h1 class="text-2xl font-bold text-gray-800 mb-6">Clientes</h1>
 
-    <!-- Filtro por cuenta -->
-    <form method="GET" action="{{ url_for('clientes') }}" class="mb-6">
-      <label for="cuenta" class="block text-sm font-medium text-gray-700 mb-1">Filtrar por número de cuenta:</label>
-      <div class="flex">
-        <input type="text" name="cuenta" id="cuenta"
-               placeholder="Número de cuenta"
-               value="{{ request.args.get('cuenta', '') }}"
-               class="border border-gray-300 rounded-l-md px-4 py-2 w-full focus:outline-none focus:ring focus:border-blue-400">
-        <button type="submit"
-                class="bg-blue-600 text-white px-4 py-2 rounded-r-md hover:bg-blue-700 transition">
-          Filtrar
-        </button>
-      </div>
-    </form>
+  <!-- Filtro en tiempo real -->
+  <div class="mb-6">
+    <label for="busquedaCuenta" class="block text-sm font-medium text-gray-700 mb-1">Buscar por número de cuenta:</label>
+    <input type="text" id="busquedaCuenta" placeholder="Escribe aquí..."
+           class="border border-gray-300 rounded-md px-4 py-2 w-full focus:outline-none focus:ring focus:border-blue-400">
+  </div>
 
-    <!-- Card estilo StarAdmin -->
-    <div class="bg-white rounded-xl shadow-md p-4">
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Nombre</th>
-              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Cédula</th>
-              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Correo</th>
-              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Cuenta</th>
-              <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Estado</th>
-              <th class="px-6 py-3 text-center text-sm font-semibold text-gray-600">Acción</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-100">
-            {% for cliente in clientes %}
-            <tr class="hover:bg-gray-50 transition">
-              <td class="px-6 py-4 text-sm text-gray-800">{{ cliente.name }}</td>
-              <td class="px-6 py-4 text-sm text-gray-800">{{ cliente.cedula }}</td>
-              <td class="px-6 py-4 text-sm text-gray-800">{{ cliente.correo }}</td>
-              <td class="px-6 py-4 text-sm text-gray-800">{{ cliente.numero_cuenta }}</td>
-              <td class="px-6 py-4 text-sm">
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  Activo
-                </span>
-              </td>
-              <td class="px-6 py-4 text-center">
-                <a href="/cliente/{{ cliente.id }}"
-                   class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-sm px-4 py-1.5 transition duration-200">
-                  Ver más
-                </a>
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
+  <!-- Card estilo StarAdmin -->
+  <div class="bg-white rounded-xl shadow-md p-4">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Nombre</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Cédula</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Correo</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Cuenta</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Estado</th>
+            <th class="px-6 py-3 text-center text-sm font-semibold text-gray-600">Acción</th>
+          </tr>
+        </thead>
+        <tbody id="tablaClientes" class="bg-white divide-y divide-gray-100">
+          {% for cliente in clientes %}
+          <tr class="hover:bg-gray-50 transition">
+            <td class="px-6 py-4 text-sm text-gray-800">{{ cliente.name }}</td>
+            <td class="px-6 py-4 text-sm text-gray-800">{{ cliente.cedula }}</td>
+            <td class="px-6 py-4 text-sm text-gray-800">{{ cliente.correo }}</td>
+            <td class="px-6 py-4 text-sm text-gray-800">{{ cliente.numero_cuenta }}</td>
+            <td class="px-6 py-4 text-sm">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Activo
+              </span>
+            </td>
+            <td class="px-6 py-4 text-center">
+              <a href="/cliente/{{ cliente.id }}"
+                 class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-sm px-4 py-1.5 transition duration-200">
+                Ver más
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
+</div>
+
+<!-- JavaScript para búsqueda en tiempo real -->
+<script>
+document.getElementById("busquedaCuenta").addEventListener("input", function () {
+  const query = this.value;
+
+  fetch(`/buscar_clientes?cuenta=${query}`)
+    .then(response => response.json())
+    .then(data => {
+      const tabla = document.getElementById("tablaClientes");
+      tabla.innerHTML = "";
+
+      if (data.length === 0) {
+        tabla.innerHTML = "<tr><td colspan='6' class='text-center py-4'>No se encontraron resultados</td></tr>";
+      }
+
+      data.forEach(cliente => {
+        const fila = `
+          <tr class="hover:bg-gray-50 transition">
+            <td class="px-6 py-4 text-sm text-gray-800">${cliente.name}</td>
+            <td class="px-6 py-4 text-sm text-gray-800">${cliente.cedula}</td>
+            <td class="px-6 py-4 text-sm text-gray-800">${cliente.correo}</td>
+            <td class="px-6 py-4 text-sm text-gray-800">${cliente.numero_cuenta}</td>
+            <td class="px-6 py-4 text-sm">
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Activo
+              </span>
+            </td>
+            <td class="px-6 py-4 text-center">
+              <a href="/cliente/${cliente.id}"
+                 class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-sm px-4 py-1.5 transition duration-200">
+                Ver más
+              </a>
+            </td>
+          </tr>
+        `;
+        tabla.innerHTML += fila;
+      });
+    });
+});
+</script>
 {% endblock %}

@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import os
 from functools import wraps
-
+from models import db, Cliente  # Asegúrate de importar esto
 
 app = Flask(__name__)
 app.secret_key = 'ecuaprest_secret_key'  
@@ -37,6 +37,29 @@ def login():
             flash('Invalid username or password', 'danger')
     
     return render_template('login.html')
+
+
+@app.route('/añadir_cliente', methods=['POST'])
+@login_required
+def añadir_cliente():
+    name = request.form['name']
+    cedula = request.form['cedula']
+    numero_cuenta = request.form['numero_cuenta']
+    correo = request.form['correo']
+    telefono = request.form['telefono']
+
+    nuevo_cliente = Cliente(
+        name=name,
+        cedula=cedula,
+        numero_cuenta=numero_cuenta,
+        correo=correo,
+        telefono=telefono
+    )
+    db.session.add(nuevo_cliente)
+    db.session.commit()
+    flash('Cliente añadido correctamente', 'success')
+    return redirect(url_for('clientes'))
+
 
 @app.route('/logout')
 def logout():

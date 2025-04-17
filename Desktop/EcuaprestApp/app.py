@@ -1,10 +1,23 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 import os
 from functools import wraps
-from models import db, Cliente  # Asegúrate de importar esto
+from models import db, Cliente  
+from flask import jsonify
+from config import Config
 
 app = Flask(__name__)
 app.secret_key = 'ecuaprest_secret_key'  
+
+
+app.config.from_object(Config)  # 👈 Carga la configuración desde config.py
+db.init_app(app)  # 👈 Aquí se enlaza Flask con SQLAlchemy
+
+
+@app.route('/verificar_cuenta/<numero_cuenta>')
+def verificar_cuenta(numero_cuenta):
+    existe = Cliente.query.filter_by(numero_cuenta=str(numero_cuenta)).first() is not None
+    return jsonify({'existe': existe})
+
 
 # Login required decorator
 def login_required(f):
@@ -44,9 +57,13 @@ def login():
 def añadir_cliente():
     name = request.form['name']
     cedula = request.form['cedula']
-    numero_cuenta = request.form['numero_cuenta']
+    numero_cuenta = str(request.form['numero_cuenta'])
     correo = request.form['correo']
     telefono = request.form['telefono']
+
+    if Cliente.query.filter_by(numero_cuenta=numero_cuenta).first():
+        flash('El número de cuenta ya existe. Por favor genera uno nuevo.', 'danger')
+        return redirect(url_for('clientes'))
 
     nuevo_cliente = Cliente(
         name=name,
@@ -102,4 +119,6 @@ def page_not_found(e):
     return render_template('index.html'), 404
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()  # Esto solo si necesitas crear tablas desde código
     app.run(debug=True)

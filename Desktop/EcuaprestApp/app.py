@@ -32,7 +32,8 @@ def login_required(f):
 # Routes
 @app.route('/')
 def index():
-    return render_template('index.html')
+    lista_clientes = Cliente.query.order_by(Cliente.id.desc()).limit(5).all()
+    return render_template('index.html',clientes=lista_clientes)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -110,8 +111,19 @@ def documentation():
     return render_template('pages/documentation/index.html')
 
 @app.route('/Clientes')
+@login_required
 def clientes():
-    return render_template('clientes.html')
+    cuenta = request.args.get('cuenta')  # Toma el valor del filtro si se envió
+
+    if cuenta:
+        # Si hay filtro, busca coincidencias por número de cuenta
+        lista_clientes = Cliente.query.filter(Cliente.numero_cuenta.ilike(f"%{cuenta}%")).all()
+    else:
+        # Si no hay filtro, muestra todos los clientes
+        lista_clientes = Cliente.query.all()
+
+    return render_template('clientes.html', clientes=lista_clientes)
+
 
 # Error handlers
 @app.errorhandler(404)

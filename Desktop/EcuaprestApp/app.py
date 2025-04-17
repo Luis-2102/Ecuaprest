@@ -43,7 +43,7 @@ def login():
         admin = Administrador.query.filter_by(nombre=username, clave=password).first()
 
         if admin:
-            session['admin_id'] = admin.id
+            session['user_id'] = admin.id
             session['admin_nombre'] = admin.nombre
             flash('Inicio de sesión exitoso', 'success')
             return redirect(url_for('index'))

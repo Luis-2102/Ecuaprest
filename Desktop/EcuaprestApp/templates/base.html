@@ -47,9 +47,9 @@
         <ul class="navbar-nav">
           <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
             {% if session['admin_nombre'] %}
-              <h1 class="welcome-text">Bienvenido, <span class="text-black fw-bold">--{{ session['admin_nombre'] }}--</span></h1>
+              <h1 class="welcome-text">Bienvenido, <span class="text-black fw-bold">{{ session['admin_nombre'] }}</span></h1>
             {% endif %}
-            <h3 class="welcome-sub-text">Your performance summary this week </h3>
+            <h3 class="welcome-sub-text">Resumen del desempeño de la semana </h3>
           </li>
         </ul>
         <ul class="navbar-nav ms-auto">

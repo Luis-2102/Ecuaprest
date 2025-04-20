@@ -21,8 +21,8 @@
             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Cédula</th>
             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Correo</th>
             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Cuenta</th>
-            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Estado</th>
-            <th class="px-6 py-3 text-center text-sm font-semibold text-gray-600">Acción</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Documentos</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600 text-center">Acciones</th>
           </tr>
         </thead>
         <tbody id="tablaClientes" class="bg-white divide-y divide-gray-100">
@@ -32,16 +32,23 @@
             <td class="px-6 py-4 text-sm text-gray-800">{{ cliente.cedula }}</td>
             <td class="px-6 py-4 text-sm text-gray-800">{{ cliente.correo }}</td>
             <td class="px-6 py-4 text-sm text-gray-800">{{ cliente.numero_cuenta }}</td>
-            <td class="px-6 py-4 text-sm">
-              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                Activo
-              </span>
+            <td class="px-6 py-4 text-center">
+              <a href="{{ url_for('ver_documento', cliente_id=cliente.id) }}"
+                 class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-sm px-4 py-1.5 transition duration-200">
+                Ver pdf
+              </a>
             </td>
             <td class="px-6 py-4 text-center">
-              <a href="/cliente/{{ cliente.id }}"
-                 class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-sm px-4 py-1.5 transition duration-200">
-                Ver más
-              </a>
+              <div class="flex justify-center gap-2">
+                <a href=""
+                  class="text-white bg-green-600 hover:bg-green-700 font-medium rounded-md text-sm px-4 py-1.5 transition duration-200">
+                  Pagar Deuda
+                </a>
+                <a href=""
+                  class="text-white bg-yellow-600 hover:bg-yellow-700 font-medium rounded-md text-sm px-4 py-1.5 transition duration-200">
+                  Agregar Deuda
+                </a>
+              </div>
             </td>
           </tr>
           {% endfor %}

@@ -1,7 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for, session, flash
-import os
+from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
+import os, io
 from functools import wraps
-from models import db, Cliente, Administrador 
+from models import db, Cliente, Administrador, Documento
 from flask import jsonify
 from config import Config
 
@@ -24,7 +24,7 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
-            flash('Please log in to access this page', 'warning')
+            flash('Inicie sesión para acceder a esta página', 'warning')
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
@@ -45,6 +45,7 @@ def login():
         if admin:
             session['user_id'] = admin.id
             session['admin_nombre'] = admin.nombre
+            session['admin_correo'] = admin.correo
             flash('Inicio de sesión exitoso', 'success')
             return redirect(url_for('index'))
         else:
@@ -60,6 +61,7 @@ def añadir_cliente():
     numero_cuenta = str(request.form['numero_cuenta'])
     correo = request.form['correo']
     telefono = request.form['telefono']
+    archivo = request.files['archivo']
 
     if Cliente.query.filter_by(numero_cuenta=numero_cuenta).first():
         flash('El número de cuenta ya existe. Por favor genera uno nuevo.', 'danger')
@@ -74,15 +76,38 @@ def añadir_cliente():
     )
     db.session.add(nuevo_cliente)
     db.session.commit()
+    
+    if archivo and archivo.filename.endswith('.pdf'):
+        documento = Documento(
+            cliente_id=nuevo_cliente.id,
+            archivo=archivo.read(),
+            nombre_archivo=archivo.filename,
+            tipo_archivo=archivo.mimetype
+        )
+        db.session.add(documento)
+        db.session.commit()
     flash('Cliente añadido correctamente', 'success')
     return redirect(url_for('clientes'))
 
+@app.route('/ver_documento/<int:cliente_id>')
+@login_required
+def ver_documento(cliente_id):
+    documento = Documento.query.filter_by(cliente_id=cliente_id).first()
+    if documento:
+        return send_file(
+            io.BytesIO(documento.archivo),
+            mimetype=documento.tipo_archivo,
+            download_name=documento.nombre_archivo,
+            as_attachment=False
+        )
+    flash('Documento no encontrado', 'warning')
+    return redirect(url_for('clientes'))
 
 @app.route('/logout')
 def logout():
     session.clear()
-    flash('You have been logged out', 'info')
-    return redirect(url_for('login.html'))
+    flash('Se ha cerrado la sesión', 'info')
+    return redirect(url_for('login'))
 
 @app.route('/dashboard')
 @login_required

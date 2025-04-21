@@ -149,26 +149,50 @@ def pagar_deuda():
     flash('Pago registrado correctamente.', 'success')
     return redirect(url_for('clientes'))
 
-@app.route('/editar_cliente/<int:cliente_id>', methods=['GET', 'POST'])
+@app.route('/editar_cliente/<int:cliente_id>', methods=['POST'])
+@login_required
 def editar_cliente(cliente_id):
     cliente = Cliente.query.get_or_404(cliente_id)
+    documento = Documento.query.filter_by(cliente_id=cliente_id).first()
+    archivo = request.files.get('archivo')
 
-    if request.method == 'POST':
-        cliente.name = request.form['name']
-        cliente.cedula = request.form['cedula']
-        cliente.correo = request.form['correo']
-        cliente.numero_cuenta = request.form['numero_cuenta']
+    cliente.name = request.form['name']
+    cliente.cedula = request.form['cedula']
+    cliente.correo = request.form['correo']
+    cliente.numero_cuenta = request.form['numero_cuenta']
+    cliente.telefono = request.form['telefono']
+
+    # Guardar cambios del cliente
+    db.session.commit()
+
+    # Si se sube un nuevo documento
+    if archivo and archivo.filename.endswith('.pdf'):
+        if documento:
+            # Si ya existe documento, actualizamos
+            documento.archivo = archivo.read()
+            documento.nombre_archivo = archivo.filename
+            documento.tipo_archivo = archivo.mimetype
+        else:
+            # Si no existe, lo creamos
+            nuevo_documento = Documento(
+                cliente_id=cliente.id,
+                archivo=archivo.read(),
+                nombre_archivo=archivo.filename,
+                tipo_archivo=archivo.mimetype
+            )
+            db.session.add(nuevo_documento)
         db.session.commit()
-        flash('Cliente actualizado correctamente.', 'success')
-        return redirect(url_for('clientes'))
 
-    return render_template('clientes.html', cliente=cliente)
+    flash('Cliente actualizado correctamente.', 'success')
+    return redirect(url_for('clientes'))
 
 @app.route('/eliminar_cliente/<int:cliente_id>')
 def eliminar_cliente(cliente_id):
     cliente = Cliente.query.get_or_404(cliente_id)
+    documento = Documento.query.filter_by(cliente_id=cliente_id).first()
 
     # Puedes implementar validaciones como: si tiene deudas activas, no permitir eliminar
+    db.session.delete(documento)
     db.session.delete(cliente)
     db.session.commit()
     flash('Cliente eliminado correctamente.', 'success')

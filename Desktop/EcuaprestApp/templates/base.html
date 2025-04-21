@@ -47,7 +47,8 @@
         <ul class="navbar-nav">
           <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
             {% if session['admin_nombre'] %}
-              <h1 class="welcome-text">Bienvenido, <span class="text-black fw-bold">{{ session['admin_nombre'] }}</span></h1>
+            <h1 class="welcome-text">Bienvenido, <span class="text-black fw-bold">{{ session['admin_nombre'] }}</span>
+            </h1>
             {% endif %}
             <h3 class="welcome-sub-text">Resumen del desempeño de la semana </h3>
           </li>
@@ -111,10 +112,12 @@
           </li>
           <li class="nav-item dropdown d-none d-lg-block user-dropdown">
             <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-              <img class="img-xs rounded-circle" src="https://www.w3schools.com/howto/img_avatar.png" alt="Profile image"> </a>
+              <img class="img-xs rounded-circle" src="https://www.w3schools.com/howto/img_avatar.png"
+                alt="Profile image"> </a>
             <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
               <div class="dropdown-header text-center">
-                <img class="img-md rounded-circle" src="https://www.w3schools.com/howto/img_avatar.png" alt="Imagen de perfil" >
+                <img class="img-md rounded-circle" src="https://www.w3schools.com/howto/img_avatar.png"
+                  alt="Imagen de perfil">
                 {% if session['admin_nombre'] and session['admin_correo'] %}
                 <p class="mb-1 mt-3 font-weight-semibold">{{session['admin_nombre']}}</p>
                 <p class="fw-light text-muted mb-0">{{session['admin_correo']}}</p>
@@ -187,11 +190,11 @@
                 <div class="d-sm-flex align-items-center justify-content-between border-bottom">
                   <ul class="nav nav-tabs" role="tablist">
                     <li class="nav-item">
-                      <a class="nav-link active ps-0" id="home-tab"  href="{{ url_for('index') }}" role="tab"
+                      <a class="nav-link active ps-0" id="home-tab" href="{{ url_for('index') }}" role="tab"
                         aria-controls="overview" aria-selected="true">Panel</a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link active ps-0" id="cliente-tab"  href="{{ url_for('clientes') }}" role="tab"
+                      <a class="nav-link active ps-0" id="cliente-tab" href="{{ url_for('clientes') }}" role="tab"
                         aria-controls="overview" aria-selected="true">Clientes</a>
                     </li>
                   </ul>
@@ -203,7 +206,7 @@
                   </div>
                 </div>
                 {% block contenido %}
-                    <!-- Aquí va el contenido de cada página -->
+                <!-- Aquí va el contenido de cada página -->
                 {% endblock %}
               </div>
             </div>
@@ -240,26 +243,52 @@
       const generar13 = () => {
         return Array.from({ length: 13 }, () => Math.floor(Math.random() * 10)).join('');
       };
-  
+
       let cuentaValida = false;
       let numeroCuenta = '';
-  
+
       while (!cuentaValida) {
         numeroCuenta = generar13();
-  
+
         const response = await fetch(`/verificar_cuenta/${numeroCuenta}`);
         const data = await response.json();
-  
+
         if (!data.existe) {
           cuentaValida = true;
         }
       }
-  
+
       document.getElementById('numero_cuenta').value = numeroCuenta;
       document.getElementById('cuenta-error').style.display = 'none';
     }
   </script>
-  
+
+  <script>
+    // Función para ocultar/mostrar navbar al hacer scroll
+    document.addEventListener('DOMContentLoaded', function () {
+      let prevScrollPos = window.pageYOffset;
+      const navbar = document.querySelector('.navbar.default-layout');
+      const navbarHeight = navbar.offsetHeight;
+
+      // Agregar estilos para una transición suave
+      navbar.style.transition = 'top 0.3s ease-in-out';
+
+      window.addEventListener('scroll', function () {
+        const currentScrollPos = window.pageYOffset;
+
+        // Si hacemos scroll hacia abajo y hemos bajado más de 50px
+        if (prevScrollPos < currentScrollPos && currentScrollPos > 50) {
+          navbar.style.top = `-${navbarHeight}px`; // Oculta el navbar
+        } else {
+          navbar.style.top = '0'; // Muestra el navbar
+        }
+
+        prevScrollPos = currentScrollPos;
+      });
+    });
+  </script>
+
+
   <!-- End plugin js for this page -->
   <!-- inject:js -->
   <script src="static/js/off-canvas.js"></script>

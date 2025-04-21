@@ -1,7 +1,8 @@
+from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
 import os, io
 from functools import wraps
-from models import db, Cliente, Administrador, Documento
+from models import db, Cliente, Administrador, Documento, Deuda, Pago
 from flask import jsonify
 from config import Config
 
@@ -102,6 +103,77 @@ def ver_documento(cliente_id):
         )
     flash('Documento no encontrado', 'warning')
     return redirect(url_for('clientes'))
+
+@app.route('/agregar_deuda', methods=['POST'])
+def agregar_deuda():
+    cliente_id = request.form['cliente_id']
+    deuda_total = request.form['deuda_total']
+    fecha = request.form['fecha']
+    descripcion = request.form.get('descripcion', '')
+    interes = request.form.get('interes') or 0
+    interes_mora = request.form.get('interes_mora') or 0
+
+    nueva_deuda = Deuda(
+        cliente_id=cliente_id,
+        deuda_total=deuda_total,
+        fecha=datetime.strptime(fecha, "%Y-%m-%d"),
+        descripcion=descripcion,
+        interes=interes,
+        interes_mora=interes_mora
+    )
+    db.session.add(nueva_deuda)
+    db.session.commit()
+    flash('Deuda agregada correctamente.', 'success')
+    return redirect(url_for('clientes'))
+
+@app.route('/pagar_deuda', methods=['POST'])
+def pagar_deuda():
+    cliente_id = request.form['cliente_id']
+    abono = request.form['abono']
+    fecha_pago = request.form.get('fecha_pago')
+
+    # Puedes implementar lógica para encontrar la deuda activa del cliente
+    deuda = Deuda.query.filter_by(cliente_id=cliente_id, finalizado=False).first()
+    if not deuda:
+        flash('No se encontró deuda activa para este cliente.', 'danger')
+        return redirect(url_for('clientes'))
+
+    nuevo_pago = Pago(
+        cliente_id=cliente_id,
+        deuda_id=deuda.id,
+        abono=abono,
+        fecha_pago=datetime.strptime(fecha_pago, "%Y-%m-%dT%H:%M") if fecha_pago else datetime.utcnow()
+    )
+    db.session.add(nuevo_pago)
+    db.session.commit()
+    flash('Pago registrado correctamente.', 'success')
+    return redirect(url_for('clientes'))
+
+@app.route('/editar_cliente/<int:cliente_id>', methods=['GET', 'POST'])
+def editar_cliente(cliente_id):
+    cliente = Cliente.query.get_or_404(cliente_id)
+
+    if request.method == 'POST':
+        cliente.name = request.form['name']
+        cliente.cedula = request.form['cedula']
+        cliente.correo = request.form['correo']
+        cliente.numero_cuenta = request.form['numero_cuenta']
+        db.session.commit()
+        flash('Cliente actualizado correctamente.', 'success')
+        return redirect(url_for('clientes'))
+
+    return render_template('clientes.html', cliente=cliente)
+
+@app.route('/eliminar_cliente/<int:cliente_id>')
+def eliminar_cliente(cliente_id):
+    cliente = Cliente.query.get_or_404(cliente_id)
+
+    # Puedes implementar validaciones como: si tiene deudas activas, no permitir eliminar
+    db.session.delete(cliente)
+    db.session.commit()
+    flash('Cliente eliminado correctamente.', 'success')
+    return redirect(url_for('clientes'))
+
 
 @app.route('/logout')
 def logout():

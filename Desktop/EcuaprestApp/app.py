@@ -5,6 +5,7 @@ from functools import wraps
 from models import db, Cliente, Administrador, Documento, Deuda, Pago
 from flask import jsonify
 from config import Config
+from decimal import Decimal
 
 app = Flask(__name__)
 app.secret_key = 'ecuaprest_secret_key'  
@@ -157,7 +158,7 @@ def pagar_deuda():
     db.session.add(nuevo_pago)
 
     # Restar abono al total de la deuda
-    deuda.deuda_total -= abono
+    deuda.deuda_total -=  Decimal(str(abono))
 
     # Si se marcó como liquidada o el total llegó a 0, actualiza el estado
     if request.form.get('finalizado') or deuda.deuda_total <= 0:
@@ -255,7 +256,8 @@ def documentation():
 @login_required
 def clientes():
     lista_clientes = Cliente.query.all()
-    return render_template('clientes.html', clientes=lista_clientes)
+    deuda = Deuda.query.all()
+    return render_template('clientes.html', clientes=lista_clientes, deuda = deuda)
 
 @app.route('/buscar_clientes')
 @login_required

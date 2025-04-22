@@ -42,7 +42,7 @@
             <td class="px-6 py-4 text-center">
               <div class="flex flex-wrap justify-center gap-2">
                 <!-- Botón pagar deuda -->
-                <button onclick="abrirModalPago({{ cliente.id }})"
+                <button onclick="abrirModalPago({{ cliente.id }}, {{ cliente.deudas[0].deuda_total if cliente.deudas else 0 }})"
                   class="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1.5 rounded-md">Pagar Deuda</button>
 
                 <!-- Botón agregar deuda -->
@@ -163,6 +163,13 @@
     <h2 class="text-lg font-bold mb-4">Pagar Deuda</h2>
     <form method="POST" action="{{ url_for('pagar_deuda') }}">
       <input type="hidden" name="cliente_id" id="inputClientePago">
+      <!-- Campo solo lectura para mostrar el monto de deuda -->
+      <div class="mb-4">
+        <label for="montoDeuda" class="block text-sm font-medium text-gray-700">Deuda Total</label>
+        <input type="text" id="montoDeuda" readonly 
+               class="mt-1 block w-full rounded-md border border-gray-300 bg-gray-100 shadow-sm px-3 py-2">
+      </div>
+
       <div class="mb-3">
         <label class="block text-sm font-medium">Monto del Abono</label>
         <input type="number" step="0.01" name="abono" class="w-full border px-3 py-2 rounded-md" required>
@@ -193,8 +200,9 @@
     document.getElementById("modalDeuda").classList.add("flex");
   }
 
-  function abrirModalPago(clienteId) {
+  function abrirModalPago(clienteId, deudaTotal) {
     document.getElementById("inputClientePago").value = clienteId;
+    document.getElementById("montoDeuda").value = deudaTotal.toFixed(2) + " USD";
     document.getElementById("modalPago").classList.remove("hidden");
     document.getElementById("modalPago").classList.add("flex");
   }

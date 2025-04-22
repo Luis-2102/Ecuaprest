@@ -43,12 +43,13 @@ class Deuda(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'), nullable=False)
-    deuda_total = db.Column(db.Numeric, nullable=False)
+    capital = db.Column(db.Numeric, nullable=False)  # Monto sin interés
+    interes = db.Column(db.Numeric)  # En porcentaje: ej. 5 = 5%
+    interes_mora = db.Column(db.Numeric)
+    deuda_total = db.Column(db.Numeric, nullable=False)  # Capital + intereses
     fecha = db.Column(db.Date, nullable=False)
     descripcion = db.Column(db.Text)
     finalizado = db.Column(db.Boolean, default=False)
-    interes = db.Column(db.Numeric)
-    interes_mora = db.Column(db.Numeric)
 
     pagos = db.relationship('Pago', backref='deuda', lazy=True)
 

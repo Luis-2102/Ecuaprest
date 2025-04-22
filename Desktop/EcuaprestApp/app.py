@@ -107,32 +107,42 @@ def ver_documento(cliente_id):
 @app.route('/agregar_deuda', methods=['POST'])
 def agregar_deuda():
     cliente_id = request.form['cliente_id']
-    deuda_total = request.form['deuda_total']
+    capital = float(request.form['deuda_total'])
     fecha = request.form['fecha']
     descripcion = request.form.get('descripcion', '')
-    interes = request.form.get('interes') or 0
-    interes_mora = request.form.get('interes_mora') or 0
+    interes = float(request.form.get('interes') or 0)
+    interes_mora = float(request.form.get('interes_mora') or 0)
+
+    interes_monto = (capital * interes) / 100
+    mora_monto = (capital * interes_mora) / 100
+    deuda_total = capital + interes_monto + mora_monto
+
+    finalizado = bool(request.form.get('finalizado'))  # <- Aquí va
 
     nueva_deuda = Deuda(
         cliente_id=cliente_id,
+        capital=capital,
+        interes=interes,
+        interes_mora=interes_mora,
         deuda_total=deuda_total,
         fecha=datetime.strptime(fecha, "%Y-%m-%d"),
         descripcion=descripcion,
-        interes=interes,
-        interes_mora=interes_mora
+        finalizado=finalizado  # <- Usamos aquí
     )
+
     db.session.add(nueva_deuda)
     db.session.commit()
     flash('Deuda agregada correctamente.', 'success')
     return redirect(url_for('clientes'))
 
+
+
 @app.route('/pagar_deuda', methods=['POST'])
 def pagar_deuda():
     cliente_id = request.form['cliente_id']
-    abono = request.form['abono']
+    abono = float(request.form['abono'])
     fecha_pago = request.form.get('fecha_pago')
 
-    # Puedes implementar lógica para encontrar la deuda activa del cliente
     deuda = Deuda.query.filter_by(cliente_id=cliente_id, finalizado=False).first()
     if not deuda:
         flash('No se encontró deuda activa para este cliente.', 'danger')
@@ -145,9 +155,20 @@ def pagar_deuda():
         fecha_pago=datetime.strptime(fecha_pago, "%Y-%m-%dT%H:%M") if fecha_pago else datetime.utcnow()
     )
     db.session.add(nuevo_pago)
+
+    # Restar abono al total de la deuda
+    deuda.deuda_total -= abono
+
+    # Si se marcó como liquidada o el total llegó a 0, actualiza el estado
+    if request.form.get('finalizado') or deuda.deuda_total <= 0:
+        deuda.finalizado = True
+        deuda.deuda_total = max(deuda.deuda_total, 0)  # Evitar negativos
+
     db.session.commit()
     flash('Pago registrado correctamente.', 'success')
     return redirect(url_for('clientes'))
+
+
 
 @app.route('/editar_cliente/<int:cliente_id>', methods=['POST'])
 @login_required

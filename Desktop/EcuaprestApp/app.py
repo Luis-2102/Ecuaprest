@@ -1,12 +1,13 @@
-from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file
+from datetime import datetime, timedelta
+from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file, Blueprint, jsonify
 import os, io
 from functools import wraps
 from models import db, Cliente, Administrador, Documento, Deuda, Pago
-from flask import jsonify
 from config import Config
 from decimal import Decimal
-from datetime import datetime, timedelta
+from sqlalchemy import func
+
+api = Blueprint('api', __name__)
 app = Flask(__name__)
 app.secret_key = 'ecuaprest_secret_key'  
 
@@ -165,8 +166,7 @@ def pagar_deuda():
 
     db.session.commit()
     flash('Pago registrado correctamente.', 'success')
-    return redirect(url_for('clientes'))
-
+    return redirect(url_for('comprobante_pago', pago_id=nuevo_pago.id))
 
 
 @app.route('/editar_cliente/<int:cliente_id>', methods=['POST'])
@@ -232,7 +232,58 @@ def eliminar_cliente(cliente_id):
     flash('Cliente eliminado correctamente.', 'success')
     return redirect(url_for('clientes'))
 
-
+@app.route('/api/pagos-por-dia', methods=['GET'])
+def pagos_por_dia():
+    # Obtener fecha actual
+    hoy = datetime.utcnow()
+    
+    # Calcular inicio de esta semana (domingo)
+    inicio_esta_semana = hoy - timedelta(days=hoy.weekday() + 1)
+    inicio_esta_semana = inicio_esta_semana.replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    # Calcular inicio de semana pasada
+    inicio_semana_pasada = inicio_esta_semana - timedelta(days=7)
+    
+    # Obtener datos de esta semana agrupados por día
+    pagos_esta_semana = db.session.query(
+        func.sum(Pago.abono),
+        func.extract('dow', Pago.fecha_pago)
+    ).filter(
+        Pago.fecha_pago >= inicio_esta_semana,
+        Pago.fecha_pago < inicio_esta_semana + timedelta(days=7)
+    ).group_by(
+        func.extract('dow', Pago.fecha_pago)
+    ).all()
+    
+    # Obtener datos de semana pasada agrupados por día
+    pagos_semana_pasada = db.session.query(
+        func.sum(Pago.abono),
+        func.extract('dow', Pago.fecha_pago)
+    ).filter(
+        Pago.fecha_pago >= inicio_semana_pasada,
+        Pago.fecha_pago < inicio_esta_semana
+    ).group_by(
+        func.extract('dow', Pago.fecha_pago)
+    ).all()
+    
+    # Inicializar arrays para los 7 días de la semana
+    datos_esta_semana = [0, 0, 0, 0, 0, 0, 0]
+    datos_semana_pasada = [0, 0, 0, 0, 0, 0, 0]
+    
+    # Llenar datos de esta semana
+    for suma, dia in pagos_esta_semana:
+        dia_idx = int(dia)
+        datos_esta_semana[dia_idx] = float(suma) if suma else 0
+    
+    # Llenar datos de semana pasada
+    for suma, dia in pagos_semana_pasada:
+        dia_idx = int(dia)
+        datos_semana_pasada[dia_idx] = float(suma) if suma else 0
+    
+    return jsonify({
+        'thisWeek': datos_esta_semana,
+        'lastWeek': datos_semana_pasada
+    })
 
 @app.route('/logout')
 def logout():
@@ -295,7 +346,14 @@ def buscar_clientes():
 
     return jsonify(data)
 
+@app.route('/comprobante_pago/<int:pago_id>')
+@login_required
+def comprobante_pago(pago_id):
+    pago = Pago.query.get_or_404(pago_id)
+    cliente = pago.cliente
+    deuda = pago.deuda
 
+    return render_template('comprobante_pago.html', pago=pago, cliente=cliente, deuda=deuda)
 
 # Error handlers
 @app.errorhandler(404)

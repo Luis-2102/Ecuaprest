@@ -60,4 +60,6 @@ class Pago(db.Model):
     deuda_id = db.Column(db.Integer, db.ForeignKey('deudas.id'), nullable=False)
     abono = db.Column(db.Numeric, nullable=False)
     fecha_pago = db.Column(db.DateTime, default=datetime.utcnow)
- 
+    
+    
+    deuda = db.relationship('Deuda', backref='pagos_relacion', lazy=True)

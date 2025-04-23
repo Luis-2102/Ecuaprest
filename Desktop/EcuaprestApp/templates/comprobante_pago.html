@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Comprobante de Pago</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+    }
+    .comprobante {
+      border: 1px solid #ccc;
+      padding: 20px;
+      max-width: 500px;
+      margin: auto;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .info {
+      margin-bottom: 10px;
+    }
+    .btn-imprimir {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      background: #1F3BB3;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    @media print {
+      .btn-imprimir {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="comprobante">
+  <h2>Comprobante de Pago</h2>
+  <div class="info"><strong>Nombre:</strong> {{ cliente.name }}</div>
+  <div class="info"><strong>Cédula:</strong> {{ cliente.cedula }}</div>
+  <div class="info"><strong>Correo:</strong> {{ cliente.correo }}</div>
+  <div class="info"><strong>Fecha de Pago:</strong> {{ pago.fecha_pago.strftime('%d/%m/%Y %H:%M') }}</div>
+  <div class="info"><strong>Monto del Abono:</strong> ${{ pago.abono }}</div>
+  <div class="info"><strong>Deuda Asociada:</strong> ${{ deuda.deuda_total}}</div>
+
+  <button onclick="window.print()" class="btn-imprimir">Imprimir Comprobante</button>
+<a href="{{ url_for('clientes') }}" class="btn-imprimir" style="background-color: #6c757d; text-align: center; text-decoration: none; display: inline-block;">
+  Volver al Inicio
+</a>
+
+</div>
+
+</body>
+</html>

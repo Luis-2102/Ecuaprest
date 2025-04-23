@@ -51,8 +51,6 @@ class Deuda(db.Model):
     descripcion = db.Column(db.Text)
     finalizado = db.Column(db.Boolean, default=False)
 
-    pagos = db.relationship('Pago', backref='deuda', lazy=True)
-
 
 class Pago(db.Model):
     __tablename__ = 'pagos'

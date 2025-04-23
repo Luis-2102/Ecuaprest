@@ -4,6 +4,17 @@
 <div class="p-6 sm:p-10">
   <h1 class="text-2xl font-bold text-gray-800 mb-6">Clientes</h1>
 
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show mt-3" role="alert" id="flashMessage{{ loop.index }}">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
   <!-- Filtro -->
   <div class="mb-6">
     <label for="busquedaCuenta" class="block text-sm font-medium text-gray-700 mb-1">Buscar por número de
@@ -217,61 +228,180 @@
 
 <!-- JavaScript para búsqueda en tiempo real -->
 <script>
-  document.getElementById("busquedaCuenta").addEventListener("input", function () {
-    const query = this.value;
+  document.getElementById("busquedaCuenta").addEventListener("input", function() {
+  const query = this.value;
 
-    fetch(`/buscar_clientes?cuenta=${query}`)
-      .then(response => response.json())
-      .then(data => {
-        const tabla = document.getElementById("tablaClientes");
-        tabla.innerHTML = "";
+  fetch(`/buscar_clientes?cuenta=${query}`)
+    .then(response => response.json())
+    .then(data => {
+      const tabla = document.getElementById("tablaClientes");
+      tabla.innerHTML = "";
 
-        if (data.length === 0) {
-          tabla.innerHTML = "<tr><td colspan='6' class='text-center py-4'>No se encontraron resultados</td></tr>";
-        }
+      if (data.length === 0) {
+        tabla.innerHTML = "<tr><td colspan='6' class='text-center py-4'>No se encontraron resultados</td></tr>";
+        return;
+      }
 
-        data.forEach(cliente => {
-          const fila = `
-          <tr class="hover:bg-gray-50 transition">
-            <td class="px-6 py-4 text-sm text-gray-800">${cliente.name}</td>
-            <td class="px-6 py-4 text-sm text-gray-800">${cliente.cedula}</td>
-            <td class="px-6 py-4 text-sm text-gray-800">${cliente.correo}</td>
-            <td class="px-6 py-4 text-sm text-gray-800">${cliente.numero_cuenta}</td>
-            <td class="px-6 py-4 text-center">
-              <a href="/ver_documento/${cliente.id}"
-                class="inline-block text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-sm px-4 py-2 transition duration-200">
-                Ver documentos
+      data.forEach(cliente => {
+        // Crear la fila principal
+        const fila = document.createElement('tr');
+        fila.className = "hover:bg-gray-50 transition";
+        
+        // Contenido básico de la fila
+        fila.innerHTML = `
+          <td class="px-6 py-4 text-sm text-gray-800">${cliente.name}</td>
+          <td class="px-6 py-4 text-sm text-gray-800">${cliente.cedula}</td>
+          <td class="px-6 py-4 text-sm text-gray-800">${cliente.correo}</td>
+          <td class="px-6 py-4 text-sm text-gray-800">${cliente.numero_cuenta}</td>
+          <td class="px-6 py-4 text-center">
+            <a href="/ver_documento/${cliente.id}"
+              class="inline-block text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-sm px-4 py-2 transition duration-200">
+              Ver documentos
+            </a>
+          </td>
+          <td class="px-6 py-4 text-center">
+            <div class="flex flex-wrap justify-center gap-2">
+              <button onclick="abrirModalPago(${cliente.id}, ${cliente.deuda || 0})"
+                class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-md shadow-sm transition duration-200">
+                Pagar Deuda
+              </button>
+              <button onclick="abrirModalDeuda(${cliente.id})"
+                class="bg-yellow-600 hover:bg-yellow-700 text-white text-sm px-4 py-2 rounded-md shadow-sm transition duration-200">
+                Agregar Deuda
+              </button>
+              <button type="button"
+                class="editar-btn bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-md shadow-sm transition duration-200"
+                data-id="${cliente.id}">
+                Editar
+              </button>
+              <a href="/eliminar_cliente/${cliente.id}"
+                class="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-2 rounded-md shadow-sm transition duration-200"
+                onclick="return confirm('¿Estás seguro de eliminar este cliente?')">
+                Eliminar
               </a>
-            </td>
-            <td class="px-6 py-4 text-center">
-              <div class="flex flex-wrap justify-center gap-2">
-                <!-- Botón pagar deuda -->
-                <button onclick="abrirModalPago(${cliente.id})"
-                  class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-md shadow-sm transition duration-200">Pagar Deuda</button>
-
-                <!-- Botón agregar deuda -->
-                <button onclick="abrirModalDeuda(${cliente.id})"
-                  class="bg-yellow-600 hover:bg-yellow-700 text-white text-sm px-4 py-2 rounded-md shadow-sm transition duration-200">Agregar
-                  Deuda</button>
-
-                <!-- Editar cliente -->
-                <!-- Reemplaza dentro de la tabla el botón de editar -->
-                <!-- Editar cliente -->
-                <button type="button"
-                  class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-md shadow-sm transition duration-200"
-                  data-bs-toggle="modal" data-bs-target="#modalEditarCliente${cliente.id}">
-                  Editar
-                </button>
-                <a href="/eliminar_cliente/${cliente.id}"
-                  class="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-2 rounded-md shadow-sm transition duration-200"
-                  onclick="return confirm('¿Estás seguro de eliminar este cliente?')">Eliminar</a>
-              </div>
-            </td>
-          </tr>
+            </div>
+          </td>
         `;
-          tabla.innerHTML += fila;
+        
+        tabla.appendChild(fila);
+        
+        // Crear el modal de edición separadamente
+        if (!document.getElementById(`modalEditarCliente${cliente.id}`)) {
+          const modalHTML = `
+            <div class="modal fade" id="modalEditarCliente${cliente.id}" tabindex="-1"
+              aria-labelledby="modalEditarClienteLabel${cliente.id}" aria-hidden="true">
+              <div class="modal-dialog">
+                <form method="POST" action="/editar_cliente/${cliente.id}" enctype="multipart/form-data">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="modalEditarClienteLabel${cliente.id}">Editar Cliente</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="mb-3">
+                        <label class="form-label">Nombre</label>
+                        <input type="text" class="form-control" name="name" value="${cliente.name}" required>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label">Cédula</label>
+                        <input type="text" class="form-control" name="cedula" value="${cliente.cedula}" required>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label">PDF con cédula y papel de votación</label>
+                        <input type="file" class="form-control" name="archivo" accept="application/pdf">
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label">Número de Cuenta</label>
+                        <input type="text" class="form-control" name="numero_cuenta" value="${cliente.numero_cuenta}" readonly required>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label">Correo</label>
+                        <input type="email" class="form-control" name="correo" value="${cliente.correo}" required>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" class="form-control" name="telefono" value="${cliente.telefono || ''}">
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                      <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          `;
+          
+          // Agregar el modal al body
+          const modalContainer = document.createElement('div');
+          modalContainer.innerHTML = modalHTML;
+          document.body.appendChild(modalContainer.firstElementChild);
+          
+          // Inicializar el modal de Bootstrap
+          new bootstrap.Modal(document.getElementById(`modalEditarCliente${cliente.id}`));
+        }
+      });
+      
+      // Agregar event listeners a los botones de editar
+      document.querySelectorAll('.editar-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const clienteId = this.getAttribute('data-id');
+          const modalId = `modalEditarCliente${clienteId}`;
+          const modalElement = document.getElementById(modalId);
+          
+          if (modalElement) {
+            const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+            modalInstance.show();
+          }
         });
       });
+    })
+    .catch(error => {
+      console.error('Error al buscar clientes:', error);
+    });
+});
+
+// Mantén las funciones existentes para los demás modales
+function abrirModalDeuda(clienteId) {
+  document.getElementById("inputClienteDeuda").value = clienteId;
+  document.getElementById("modalDeuda").classList.remove("hidden");
+  document.getElementById("modalDeuda").classList.add("flex");
+}
+
+function abrirModalPago(clienteId, deudaTotal) {
+  document.getElementById("inputClientePago").value = clienteId;
+  document.getElementById("montoDeuda").value = deudaTotal.toFixed(2) + " USD";
+  document.getElementById("modalPago").classList.remove("hidden");
+  document.getElementById("modalPago").classList.add("flex");
+}
+
+function cerrarModal(id) {
+  const modal = document.getElementById(id);
+  modal.classList.add("hidden");
+  modal.classList.remove("flex");
+}
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    setTimeout(function() {
+      // Seleccionamos todos los elementos con la clase 'alert' que son los mensajes flash
+      const flashMessages = document.querySelectorAll('.alert');
+      
+      // Ocultamos los mensajes después de 10 segundos (10,000 milisegundos)
+      flashMessages.forEach(function(msg) {
+        msg.style.transition = "opacity 1s ease-out"; // Añadimos una animación de desvanecimiento
+        msg.style.opacity = 0; // Hacemos que el mensaje se desvanezca
+      });
+
+      // Después de 1 segundo, eliminamos el mensaje del DOM
+      setTimeout(function() {
+        flashMessages.forEach(function(msg) {
+          msg.remove(); // Eliminar completamente el mensaje del DOM
+        });
+      }, 1000); // Elimina el mensaje después de 1 segundo (para que se vea la animación)
+    }, 10000); // 10 segundos en milisegundos (10000)
   });
 </script>
+
 {% endblock %}

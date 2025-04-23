@@ -209,14 +209,29 @@ def editar_cliente(cliente_id):
 @app.route('/eliminar_cliente/<int:cliente_id>')
 def eliminar_cliente(cliente_id):
     cliente = Cliente.query.get_or_404(cliente_id)
-    documento = Documento.query.filter_by(cliente_id=cliente_id).first()
-
-    # Puedes implementar validaciones como: si tiene deudas activas, no permitir eliminar
-    db.session.delete(documento)
+    
+    # Eliminar los documentos relacionados con el cliente
+    documentos = Documento.query.filter_by(cliente_id=cliente_id).all()
+    for documento in documentos:
+        db.session.delete(documento)
+    
+    # Eliminar las deudas relacionadas con el cliente
+    deudas = Deuda.query.filter_by(cliente_id=cliente_id).all()
+    for deuda in deudas:
+        db.session.delete(deuda)
+    
+    # Eliminar los pagos relacionados con el cliente
+    pagos = Pago.query.filter_by(cliente_id=cliente_id).all()
+    for pago in pagos:
+        db.session.delete(pago)
+    
+    # Eliminar el cliente
     db.session.delete(cliente)
     db.session.commit()
+    
     flash('Cliente eliminado correctamente.', 'success')
     return redirect(url_for('clientes'))
+
 
 
 @app.route('/logout')
@@ -263,16 +278,21 @@ def buscar_clientes():
     cuenta = request.args.get('cuenta', '')
     clientes = Cliente.query.filter(Cliente.numero_cuenta.ilike(f"%{cuenta}%")).all()
 
-    data = [
-        {
+    data = []
+    for c in clientes:
+        # Suma las deudas que no estén finalizadas
+        deuda_total = sum(float(d.deuda_total) for d in c.deudas if not d.finalizado)
+
+        data.append({
             'name': c.name,
             'cedula': c.cedula,
             'correo': c.correo,
             'numero_cuenta': c.numero_cuenta,
-            'id': c.id
-        }
-        for c in clientes
-    ]
+            'telefono':c.telefono,
+            'id': c.id,
+            'deuda': deuda_total  # Aquí ya mandas el valor calculado
+        })
+
     return jsonify(data)
 
 

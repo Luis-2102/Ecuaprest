@@ -35,10 +35,10 @@
           </button>
         </div>
         <div>
-          <a class="navbar-brand brand-logo" href="index.html">
+          <a class="navbar-brand brand-logo" href="/">
             <img src="static/images/logo.svg" alt="logo" />
           </a>
-          <a class="navbar-brand brand-logo-mini" href="index.html">
+          <a class="navbar-brand brand-logo-mini" href="/">
             <img src="static/images/logo-mini.svg" alt="logo" />
           </a>
         </div>
@@ -69,43 +69,12 @@
             </form>
           </li>
           <li class="nav-item dropdown">
-            <a class="nav-link count-indicator" id="notificationDropdown" href="#" data-bs-toggle="dropdown">
-              <i class="icon-mail icon-lg"></i>
-            </a>
-            <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0"
-              aria-labelledby="notificationDropdown">
-
-              <a class="dropdown-item preview-item py-3">
-                <div class="preview-thumbnail">
-                  <i class="mdi mdi-airballoon m-auto text-primary"></i>
-                </div>
-                <div class="preview-item-content">
-                  <h6 class="preview-subject fw-normal text-dark mb-1">Historial</h6>
-                  <p class="fw-light small-text mb-0"> hace 1 hora -- ejemplo </p>
-                </div>
-              </a>
-            </div>
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link count-indicator" id="countDropdown" href="#" data-bs-toggle="dropdown"
-              aria-expanded="false">
-              <i class="icon-bell"></i>
-              <span class="count"></span>
-            </a>
             <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0"
               aria-labelledby="countDropdown">
-              <a class="dropdown-item py-3">
-                <p class="mb-0 font-weight-medium float-left">Tienes nuevas Actividades </p>
-                <span class="badge badge-pill badge-primary float-right">Ver más</span>
-              </a>
               <div class="dropdown-divider"></div>
               <a class="dropdown-item preview-item">
                 <div class="preview-thumbnail">
                   <img src="images/faces/face10.jpg" alt="image" class="img-sm profile-pic">
-                </div>
-                <div class="preview-item-content flex-grow py-2">
-                  <p class="preview-subject ellipsis font-weight-medium text-dark">Lionel Messi </p>
-                  <p class="fw-light small-text mb-0"> Nuevo cliente </p>
                 </div>
               </a>
             </div>
@@ -123,10 +92,6 @@
                 <p class="fw-light text-muted mb-0">{{session['admin_correo']}}</p>
                 {% endif %}
               </div>
-              <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> Mi
-                Perfil <span class="badge badge-pill badge-danger">1</span></a>
-              <a class="dropdown-item"><i
-                  class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary me-2"></i> Actividades</a>
               <a class="dropdown-item" href="{{ url_for('logout') }} "><i
                   class="dropdown-item-icon mdi mdi-power text-primary me-2"></i>Cerrar Sesión</a>
             </div>
@@ -198,12 +163,6 @@
                         aria-controls="overview" aria-selected="true">Clientes</a>
                     </li>
                   </ul>
-                  <div>
-                    <div class="btn-wrapper">
-                      <a href="#" class="btn btn-otline-dark"><i class="icon-printer"></i> Print</a>
-                      <a href="#" class="btn btn-primary text-white me-0"><i class="icon-download"></i> Export</a>
-                    </div>
-                  </div>
                 </div>
                 {% block contenido %}
                 <!-- Aquí va el contenido de cada página -->
@@ -216,11 +175,10 @@
         <!-- partial:partials/_footer.html -->
         <footer class="footer">
           <div class="d-sm-flex justify-content-center justify-content-sm-between">
-            <span class="text-muted text-center text-sm-left d-block d-sm-inline-block">Premium <a
-                href="https://www.bootstrapdash.com/" target="_blank">Bootstrap admin template</a> from
-              BootstrapDash.</span>
-            <span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center">Copyright © 2021. All rights
-              reserved.</span>
+            <span class="text-muted text-center text-sm-left d-block d-sm-inline-block"> <a target="_blank"></a>
+            </span>
+            <span class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center">Ecuaprest Copyright © 2025. Todos
+              los derechos reservados.</span>
           </div>
         </footer>
         <!-- partial -->
@@ -286,6 +244,22 @@
         prevScrollPos = currentScrollPos;
       });
     });
+  </script>
+  <!-- Script para el temporizador -->
+  <script>
+    // Leer segundos previos del sessionStorage (o 0 si no hay)
+    let segundos = parseInt(sessionStorage.getItem("tiempo_en_sitio")) || 0;
+    const tiempoElemento = document.getElementById("tiempo-en-sitio");
+
+    function actualizarTiempo() {
+      segundos++;
+      sessionStorage.setItem("tiempo_en_sitio", segundos); // Guardar cada segundo
+      const minutos = Math.floor(segundos / 60);
+      const segundosRestantes = segundos % 60;
+      tiempoElemento.textContent = `${minutos}m:${segundosRestantes < 10 ? '0' : ''}${segundosRestantes}s`;
+    }
+
+    setInterval(actualizarTiempo, 1000);
   </script>
 
 

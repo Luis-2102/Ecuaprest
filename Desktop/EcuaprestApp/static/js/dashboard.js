@@ -11,7 +11,7 @@
       saleGradientBg2.addColorStop(0, 'rgba(0, 208, 255, 0.19)');
       saleGradientBg2.addColorStop(1, 'rgba(0, 208, 255, 0.03)');
       var salesTopData = {
-          labels: ["SUN","sun", "MON", "mon", "TUE","tue", "WED", "wed", "THU", "thu", "FRI", "fri", "SAT"],
+          labels: ["DOM","dom", "LUN", "lun", "MAR","mar", "MIE", "mie", "JUE", "jue", "VIE", "vie", "SAB"],
           datasets: [{
               label: 'This week',
               data: [50, 110, 60, 290, 200, 115, 130, 170, 90, 210, 240, 280, 200],

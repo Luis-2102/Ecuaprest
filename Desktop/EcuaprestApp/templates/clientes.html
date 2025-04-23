@@ -35,26 +35,28 @@
             <td class="px-6 py-4 text-sm text-gray-800">{{ cliente.numero_cuenta }}</td>
             <td class="px-6 py-4 text-center">
               <a href="{{ url_for('ver_documento', cliente_id=cliente.id) }}"
-                class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-sm px-4 py-1.5 transition duration-200">
+                class="inline-block text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-sm px-4 py-2 transition duration-200">
                 Ver documentos
               </a>
             </td>
             <td class="px-6 py-4 text-center">
               <div class="flex flex-wrap justify-center gap-2">
-                <!-- Botón pagar deuda -->
-                <button onclick="abrirModalPago({{ cliente.id }}, {{ cliente.deudas[0].deuda_total if cliente.deudas else 0 }})"
-                  class="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1.5 rounded-md">Pagar Deuda</button>
-
+                <!-- Pagar Deuda -->
+                <button
+                  onclick="abrirModalPago({{ cliente.id }}, {{ cliente.deudas[0].deuda_total if cliente.deudas else 0 }})"
+                  class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-md shadow-sm transition duration-200">
+                  Pagar Deuda
+                </button>
                 <!-- Botón agregar deuda -->
                 <button onclick="abrirModalDeuda({{ cliente.id }})"
-                  class="bg-yellow-600 hover:bg-yellow-700 text-white text-sm px-3 py-1.5 rounded-md">Agregar
+                  class="bg-yellow-600 hover:bg-yellow-700 text-white text-sm px-4 py-2 rounded-md shadow-sm transition duration-200">Agregar
                   Deuda</button>
 
                 <!-- Editar cliente -->
                 <!-- Reemplaza dentro de la tabla el botón de editar -->
                 <!-- Editar cliente -->
                 <button type="button"
-                  class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-3 py-1.5 rounded-md"
+                  class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-md shadow-sm transition duration-200"
                   data-bs-toggle="modal" data-bs-target="#modalEditarCliente{{ cliente.id }}">
                   Editar
                 </button>
@@ -106,11 +108,9 @@
                     </form>
                   </div>
                 </div>
-
-
                 <!-- Eliminar cliente -->
                 <a href="{{ url_for('eliminar_cliente', cliente_id=cliente.id) }}"
-                  class="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1.5 rounded-md"
+                  class="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-2 rounded-md shadow-sm transition duration-200"
                   onclick="return confirm('¿Estás seguro de eliminar este cliente?')">Eliminar</a>
               </div>
             </td>
@@ -147,7 +147,7 @@
       <div class="mb-3">
         <label class="block text-sm font-medium">Interés por Mora</label>
         <input type="number" step="0.01" name="interes_mora" class="w-full border px-3 py-2 rounded-md">
-      </div>   
+      </div>
       <div class="flex justify-end gap-2">
         <button type="button" onclick="cerrarModal('modalDeuda')"
           class="bg-gray-300 px-4 py-2 rounded-md">Cancelar</button>
@@ -166,8 +166,8 @@
       <!-- Campo solo lectura para mostrar el monto de deuda -->
       <div class="mb-4">
         <label for="montoDeuda" class="block text-sm font-medium text-gray-700">Deuda Total</label>
-        <input type="text" id="montoDeuda" readonly 
-               class="mt-1 block w-full rounded-md border border-gray-300 bg-gray-100 shadow-sm px-3 py-2">
+        <input type="text" id="montoDeuda" readonly
+          class="mt-1 block w-full rounded-md border border-gray-300 bg-gray-100 shadow-sm px-3 py-2">
       </div>
 
       <div class="mb-3">
@@ -183,12 +183,12 @@
           <input type="checkbox" name="finalizado" class="form-checkbox">
           <span class="ml-2">Marcar deuda como liquidada</span>
         </label>
-      </div>  
+      </div>
       <div class="flex justify-end gap-2">
         <button type="button" onclick="cerrarModal('modalPago')"
           class="bg-gray-300 px-4 py-2 rounded-md">Cancelar</button>
         <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md">Guardar</button>
-      </div>    
+      </div>
     </form>
   </div>
 </div>
@@ -237,9 +237,9 @@
             <td class="px-6 py-4 text-sm text-gray-800">${cliente.cedula}</td>
             <td class="px-6 py-4 text-sm text-gray-800">${cliente.correo}</td>
             <td class="px-6 py-4 text-sm text-gray-800">${cliente.numero_cuenta}</td>
-            <td class="px-6 py-4 text-sm">
+            <td class="px-6 py-4 text-center">
               <a href="/ver_documento/${cliente.id}"
-                class="text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-sm px-4 py-1.5 transition duration-200">
+                class="inline-block text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-md text-sm px-4 py-2 transition duration-200">
                 Ver documentos
               </a>
             </td>
@@ -247,23 +247,23 @@
               <div class="flex flex-wrap justify-center gap-2">
                 <!-- Botón pagar deuda -->
                 <button onclick="abrirModalPago(${cliente.id})"
-                  class="bg-green-600 hover:bg-green-700 text-white text-sm px-3 py-1.5 rounded-md">Pagar Deuda</button>
+                  class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-md shadow-sm transition duration-200">Pagar Deuda</button>
 
                 <!-- Botón agregar deuda -->
                 <button onclick="abrirModalDeuda(${cliente.id})"
-                  class="bg-yellow-600 hover:bg-yellow-700 text-white text-sm px-3 py-1.5 rounded-md">Agregar
+                  class="bg-yellow-600 hover:bg-yellow-700 text-white text-sm px-4 py-2 rounded-md shadow-sm transition duration-200">Agregar
                   Deuda</button>
 
                 <!-- Editar cliente -->
                 <!-- Reemplaza dentro de la tabla el botón de editar -->
                 <!-- Editar cliente -->
                 <button type="button"
-                  class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-3 py-1.5 rounded-md"
-                  data-bs-toggle="modal" data-bs-target="#modalEditarCliente${cliente.id }">
+                  class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-4 py-2 rounded-md shadow-sm transition duration-200"
+                  data-bs-toggle="modal" data-bs-target="#modalEditarCliente${cliente.id}">
                   Editar
                 </button>
                 <a href="/eliminar_cliente/${cliente.id}"
-                  class="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1.5 rounded-md"
+                  class="bg-red-600 hover:bg-red-700 text-white text-sm px-4 py-2 rounded-md shadow-sm transition duration-200"
                   onclick="return confirm('¿Estás seguro de eliminar este cliente?')">Eliminar</a>
               </div>
             </td>

@@ -6,7 +6,7 @@ from models import db, Cliente, Administrador, Documento, Deuda, Pago
 from flask import jsonify
 from config import Config
 from decimal import Decimal
-
+from datetime import datetime, timedelta
 app = Flask(__name__)
 app.secret_key = 'ecuaprest_secret_key'  
 
@@ -135,8 +135,6 @@ def agregar_deuda():
     db.session.commit()
     flash('Deuda agregada correctamente.', 'success')
     return redirect(url_for('clientes'))
-
-
 
 @app.route('/pagar_deuda', methods=['POST'])
 def pagar_deuda():

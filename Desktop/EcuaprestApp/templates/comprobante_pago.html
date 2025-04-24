@@ -44,6 +44,7 @@
   <h2>Comprobante de Pago</h2>
   <div class="info"><strong>Nombre:</strong> {{ cliente.name }}</div>
   <div class="info"><strong>Cédula:</strong> {{ cliente.cedula }}</div>
+  <div class="info"><strong>Numero de cuenta:</strong> {{ cliente.numero_cuenta }}</div>
   <div class="info"><strong>Correo:</strong> {{ cliente.correo }}</div>
   <div class="info"><strong>Fecha de Pago:</strong> {{ pago.fecha_pago.strftime('%d/%m/%Y %H:%M') }}</div>
   <div class="info"><strong>Monto del Abono:</strong> ${{ pago.abono }}</div>

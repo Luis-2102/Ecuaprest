@@ -267,57 +267,24 @@
             <div class="card card-rounded">
               <div class="card-body">
                 <div class="d-flex align-items-center justify-content-between mb-3">
-                  <h4 class="card-title card-title-dash">Activities</h4>
-                  <p class="mb-0">20 finished, 5 remaining</p>
+                  <h4 class="card-title card-title-dash">Actividades</h4>
                 </div>
                 <ul class="bullet-line-list">
+                {% for a in actividad %}
                   <li>
                     <div class="d-flex justify-content-between">
-                      <div><span class="text-light-green">Ben Tossell</span> assign you a task</div>
-                      <p>Just now</p>
+                      <div><span class="text-light-green">{{a.administrador.nombre}}</span> {{a.accion}}
+                      <p>{{a.descripcion}}</p>
+                      <p>{{a.fecha|tiempo_relativo}}</p>
+                      </div>
                     </div>
                   </li>
-                  <li>
-                    <div class="d-flex justify-content-between">
-                      <div><span class="text-light-green">Oliver Noah</span> assign you a task</div>
-                      <p>1h</p>
-                    </div>
-                  </li>
-                  <li>
-                    <div class="d-flex justify-content-between">
-                      <div><span class="text-light-green">Jack William</span> assign you a task</div>
-                      <p>1h</p>
-                    </div>
-                  </li>
-                  <li>
-                    <div class="d-flex justify-content-between">
-                      <div><span class="text-light-green">Leo Lucas</span> assign you a task</div>
-                      <p>1h</p>
-                    </div>
-                  </li>
-                  <li>
-                    <div class="d-flex justify-content-between">
-                      <div><span class="text-light-green">Thomas Henry</span> assign you a task</div>
-                      <p>1h</p>
-                    </div>
-                  </li>
-                  <li>
-                    <div class="d-flex justify-content-between">
-                      <div><span class="text-light-green">Ben Tossell</span> assign you a task</div>
-                      <p>1h</p>
-                    </div>
-                  </li>
-                  <li>
-                    <div class="d-flex justify-content-between">
-                      <div><span class="text-light-green">Ben Tossell</span> assign you a task</div>
-                      <p>1h</p>
-                    </div>
-                  </li>
+                {% endfor %}
                 </ul>
                 <div class="list align-items-center pt-3">
                   <div class="wrapper w-100">
                     <p class="mb-0">
-                      <a href="#" class="fw-bold text-primary">Show all <i class="mdi mdi-arrow-right ms-2"></i></a>
+                      <a href="#" class="fw-bold text-primary">Mostrar mas <i class="mdi mdi-arrow-right ms-2"></i></a>
                     </p>
                   </div>
                 </div>

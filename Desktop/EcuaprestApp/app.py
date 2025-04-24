@@ -1,11 +1,14 @@
 from datetime import datetime, timedelta
+import humanize
 from flask import Flask, render_template, request, redirect, url_for, session, flash, send_file, Blueprint, jsonify
 import os, io
 from functools import wraps
-from models import db, Cliente, Administrador, Documento, Deuda, Pago
+from models import db, Cliente, Administrador, Documento, Deuda, Pago, Actividad
 from config import Config
 from decimal import Decimal
 from sqlalchemy import func
+import pytz
+import locale
 
 api = Blueprint('api', __name__)
 app = Flask(__name__)
@@ -14,6 +17,10 @@ app.secret_key = 'ecuaprest_secret_key'
 
 app.config.from_object(Config)  # 👈 Carga la configuración desde config.py
 db.init_app(app)  # 👈 Aquí se enlaza Flask con SQLAlchemy
+
+# Zona horaria local (cambia según tu región)
+zona_horaria = pytz.timezone('America/Guayaquil')
+
 
 
 @app.route('/verificar_cuenta/<numero_cuenta>')
@@ -32,11 +39,38 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def registrar_actividad(accion, descripcion):
+    hora_local = datetime.now(zona_horaria)
+    admin_id = session.get('user_id')
+    nueva_actividad = Actividad(
+        administrador_id=admin_id,
+        accion=accion,
+        descripcion=descripcion,
+        fecha=hora_local
+    )
+    db.session.add(nueva_actividad)
+    db.session.commit()
+    
+# Filtro personalizado
+@app.template_filter('tiempo_relativo')
+def tiempo_relativo(fecha):
+    
+    locale.setlocale(locale.LC_TIME, 'es_ES.UTF-8')  # En algunos sistemas puede ser 'es_ES' o 'es_EC'
+    humanize.i18n.activate('es')
+    hora_local = datetime.now(zona_horaria)
+
+    if fecha.tzinfo is None:
+        fecha = zona_horaria.localize(fecha)
+
+    return humanize.naturaltime(hora_local - fecha)
+
+
 # Routes
 @app.route('/')
 def index():
     lista_clientes = Cliente.query.order_by(Cliente.id.desc()).limit(5).all()
-    return render_template('index.html',clientes=lista_clientes)
+    actividades = Actividad.query.order_by(Actividad.fecha.desc()).limit(5).all()
+    return render_template('index.html',clientes=lista_clientes, actividad=actividades)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -89,6 +123,11 @@ def añadir_cliente():
         )
         db.session.add(documento)
         db.session.commit()
+        
+    registrar_actividad(
+        accion='Agrego cliente',
+        descripcion=f"Se registro al cliente {name} con numero de cuenta: {numero_cuenta}"
+    )
     flash('Cliente añadido correctamente', 'success')
     return redirect(url_for('clientes'))
 
@@ -134,6 +173,12 @@ def agregar_deuda():
 
     db.session.add(nueva_deuda)
     db.session.commit()
+    cliente = Cliente.query.get(cliente_id)
+    registrar_actividad(
+        accion='Agrego Deuda',
+        descripcion=f"Se agrego una deuda de: {deuda_total} USD ,al cliente {cliente.name} con numero de cuenta: {cliente.numero_cuenta}"
+    )
+    
     flash('Deuda agregada correctamente.', 'success')
     return redirect(url_for('clientes'))
 
@@ -165,6 +210,13 @@ def pagar_deuda():
         deuda.deuda_total = max(deuda.deuda_total, 0)  # Evitar negativos
 
     db.session.commit()
+    
+    cliente = Cliente.query.get(cliente_id)
+    registrar_actividad(
+        accion='Agrego Pago',
+        descripcion=f"Se agrego un pago de: {abono} USD ,al cliente {cliente.name} con numero de cuenta: {cliente.numero_cuenta}"
+    )
+    
     flash('Pago registrado correctamente.', 'success')
     return redirect(url_for('comprobante_pago', pago_id=nuevo_pago.id))
 
@@ -202,6 +254,11 @@ def editar_cliente(cliente_id):
             )
             db.session.add(nuevo_documento)
         db.session.commit()
+        
+    registrar_actividad(
+        accion='Edito cliente',
+        descripcion=f"Se edito la informacion del cliente {cliente.name} con numero de cuenta: {cliente.numero_cuenta}"
+    )
 
     flash('Cliente actualizado correctamente.', 'success')
     return redirect(url_for('clientes'))
@@ -228,6 +285,11 @@ def eliminar_cliente(cliente_id):
     # Eliminar el cliente
     db.session.delete(cliente)
     db.session.commit()
+    
+    registrar_actividad(
+        accion='Elimino cliente',
+        descripcion=f"Se elimino al cliente {cliente.name} con numero de cuenta: {cliente.numero_cuenta}"
+    )
     
     flash('Cliente eliminado correctamente.', 'success')
     return redirect(url_for('clientes'))

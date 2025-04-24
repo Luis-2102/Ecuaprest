@@ -63,3 +63,14 @@ class Pago(db.Model):
     
     
     deuda = db.relationship('Deuda', backref='pagos_relacion', lazy=True)
+    
+class Actividad(db.Model):
+    __tablename__ = 'actividades'
+
+    id = db.Column(db.Integer, primary_key=True)
+    administrador_id = db.Column(db.Integer, db.ForeignKey('administradores.id'), nullable=False)
+    accion = db.Column(db.String, nullable=False)  # 'crear', 'editar', 'eliminar', etc.
+    descripcion = db.Column(db.Text)  # detalles de la acción
+    fecha = db.Column(db.DateTime, default=datetime.utcnow)
+
+    administrador = db.relationship('Administrador', backref='actividades', lazy=True)

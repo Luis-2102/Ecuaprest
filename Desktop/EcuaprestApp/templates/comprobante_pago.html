@@ -48,7 +48,7 @@
   <div class="info"><strong>Correo:</strong> {{ cliente.correo }}</div>
   <div class="info"><strong>Fecha de Pago:</strong> {{ pago.fecha_pago.strftime('%d/%m/%Y %H:%M') }}</div>
   <div class="info"><strong>Monto del Abono:</strong> ${{ pago.abono }}</div>
-  <div class="info"><strong>Deuda Asociada:</strong> ${{ deuda.deuda_total}}</div>
+  <div class="info"><strong>Deuda Restante:</strong> ${{ deuda.deuda_total}}</div>
 
   <button onclick="window.print()" class="btn-imprimir">Imprimir Comprobante</button>
 <a href="{{ url_for('clientes') }}" class="btn-imprimir" style="background-color: #6c757d; text-align: center; text-decoration: none; display: inline-block;">

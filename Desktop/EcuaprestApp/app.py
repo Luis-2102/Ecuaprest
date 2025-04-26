@@ -69,7 +69,7 @@ def tiempo_relativo(fecha):
 @app.route('/')
 def index():
     lista_clientes = Cliente.query.order_by(Cliente.id.desc()).limit(5).all()
-    actividades = Actividad.query.order_by(Actividad.fecha.desc()).limit(5).all()
+    actividades = Actividad.query.order_by(Actividad.fecha.desc()).all()
     return render_template('index.html',clientes=lista_clientes, actividad=actividades)
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -353,10 +353,10 @@ def logout():
     flash('Se ha cerrado la sesión', 'info')
     return redirect(url_for('login'))
 
-@app.route('/dashboard')
+@app.route('/amortizazion')
 @login_required
-def dashboard():
-    return render_template('pages/samples/dashboard.html')
+def amortizacion():
+    return render_template('Amortizacion.html')
 
 # Sample routes for different sections based on your directory structure
 @app.route('/charts')
@@ -407,6 +407,16 @@ def buscar_clientes():
         })
 
     return jsonify(data)
+
+@app.route('/buscar-cliente/<numero_cuenta>')
+def buscar_cliente(numero_cuenta):
+    cliente = Cliente.query.filter_by(numero_cuenta=numero_cuenta).first()
+    if cliente:
+        return jsonify({
+            'name': cliente.name,
+            'cedula': cliente.cedula
+        })
+    return jsonify({'error': 'Cliente no encontrado'}), 404
 
 @app.route('/comprobante_pago/<int:pago_id>')
 @login_required

@@ -1,0 +1,141 @@
+/*--------------------------------------------------------------
+# Calculadora
+--------------------------------------------------------------*/
+/* Estilos generales para la sección de la calculadora */
+#credit-calculator {
+    font-family: "Prompt Family font", sans-serif;
+  }
+  
+  .credit-calculator .container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .credit-calculator .section-title h2 {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  /* Formulario de la calculadora */
+  .calculator-form {
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+  
+  .calculator-form .form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+  }
+  
+  .calculator-form label {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+  }
+  
+  .calculator-form input[type="text"],
+  .calculator-form select {
+    padding: 10px;
+    font-size: 14px;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+  }
+  
+  .calculator-form input[type="radio"] {
+    margin-right: 5px;
+  }
+  
+  .calculator-form .simulate-btn {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    color: white;
+    background-color: #02b5b5;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .calculator-form .simulate-btn:hover {
+    background-color: #02b5b5;
+  }
+  
+  /* Tabla de amortización */
+  .amortization-table {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+  
+  }
+  
+  .amortization-table h3 {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 15px;
+  }
+  
+  .amortization-table table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    color: #333;
+    min-width: 600px; 
+  }
+  
+  .amortization-table thead {
+    background-color: #02b5b5;
+    color: white;
+  }
+  
+  .amortization-table th,
+  .amortization-table td {
+    padding: 10px;
+    text-align: center;
+    border: 1px solid #ddd;
+  }
+  
+  .amortization-table th {
+    font-weight: bold;
+  }
+  
+  .amortization-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  .amortization-table td {
+    color: #666;
+  }
+  
+  .table-responsive {
+    overflow-x: auto; /* Habilita el desplazamiento horizontal */
+    -webkit-overflow-scrolling: touch; /* Mejora el desplazamiento en dispositivos móviles */
+  }
+  
+  
+  /* Responsividad para pantallas pequeñas */
+  @media (max-width: 768px) {
+    .credit-calculator .container {
+      padding: 10px;
+    }
+    
+    .calculator-form .simulate-btn {
+      font-size: 14px;
+    }
+  }
+  @media print {
+    .no-print {
+      display: none;
+    }
+  }

@@ -20,6 +20,7 @@
   <!-- End plugin css for this page -->
   <!-- inject:css -->
   <link rel="stylesheet" href="static/css/vertical-layout-light/style.css">
+  {% block style %}{% endblock %}
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- endinject -->
   <link rel="shortcut icon" href="static/images/favicon.png" />
@@ -135,7 +136,12 @@
             </a>
           </li>
 
-          <li class="nav-item nav-category"></li>
+          <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('amortizacion') }}">
+              <i class="mdi mdi-grid-large menu-icon"></i>
+              <span class="menu-title">Tabla de amortización</span>
+            </a>
+          </li>
 
           <li class="nav-item nav-category"></li>
 
@@ -269,6 +275,7 @@
   <!-- endinject -->
   <!-- Custom js for this page-->
   <script src="static/js/dashboard.js"></script>
+  <script src="static/js/actividades.js"></script>
   <script src="static/js/Chart.roundedBarCharts.js"></script>
   <script src="static/js/calendar.js"></script>
   <!-- End custom js for this page-->

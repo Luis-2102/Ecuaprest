@@ -250,30 +250,32 @@
             </div>
           </div>
           <div class="col-md-6 col-lg-6 grid-margin stretch-card">
-            <div class="card card-rounded">
+            <div class="card card-rounded" style="max-width: 100%; overflow-x: hidden;">
               <div class="card-body">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                   <h4 class="card-title card-title-dash">Actividades</h4>
                 </div>
-                <ul class="bullet-line-list">
-                {% for a in actividad %}
-                  <li>
-                    <div class="d-flex justify-content-between">
-                      <div><span class="text-light-green">{{a.administrador.nombre}}</span> {{a.accion}}
-                      <p>{{a.descripcion}}</p>
-                      <p>{{a.fecha|tiempo_relativo}}</p>
+                <div id="actividades-container">
+                  <ul class="bullet-line-list" id="actividades-lista">
+                  {% for a in actividad %}
+                    <li class="actividad-item" style="display: none;">
+                      <div class="d-flex justify-content-between">
+                        <div><span class="text-light-green">{{a.administrador.nombre}}</span> {{a.accion}}
+                        <p>{{a.descripcion}}</p>
+                        <p>{{a.fecha|tiempo_relativo}}</p>
+                        </div>
                       </div>
-                    </div>
-                  </li>
-                {% endfor %}
-                </ul>
-                <div class="list align-items-center pt-3">
-                  <div class="wrapper w-100">
-                    <p class="mb-0">
-                      <a href="#" class="fw-bold text-primary">Mostrar mas <i class="mdi mdi-arrow-right ms-2"></i></a>
-                    </p>
-                  </div>
+                    </li>
+                  {% endfor %}
+                  </ul>
                 </div>
+                  <div class="d-flex justify-content-center mt-3">
+                    <nav>
+                      <ul class="pagination" id="paginacion-actividades">
+                        <!-- Aquí se generan los botones -->
+                      </ul>
+                    </nav>
+                  </div>
               </div>
             </div>
           </div>

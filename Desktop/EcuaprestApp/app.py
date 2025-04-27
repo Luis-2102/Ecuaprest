@@ -9,6 +9,8 @@ from decimal import Decimal
 from sqlalchemy import func
 import pytz
 import locale
+from dateutil.relativedelta import relativedelta
+
 MAXIMO_DIAS_MORA = 30
 
 
@@ -150,15 +152,13 @@ def agregar_deuda():
     fecha = datetime.strptime(request.form['fecha'], "%Y-%m-%d").date()
     descripcion = request.form.get('descripcion', '')
     interes = Decimal(request.form.get('interes') or 0)
-    interes_mora = Decimal(request.form.get('interes_mora') or 0)
-    plazo = int(request.form.get('plazo') or 0)
+    plazo = int(request.form['plazo'])
 
     # Calcular montos de interés
     interes_monto = (capital * interes) / 100
-    mora_monto = (capital * interes_mora) / 100
-
+    
     # Calcular fecha de vencimiento
-    fecha_vencimiento = fecha + timedelta(days=plazo)
+    fecha_vencimiento = fecha + relativedelta(months=plazo)
 
     # Calcular deuda total (capital + interés normal)
     deuda_total = capital + interes_monto
@@ -169,7 +169,6 @@ def agregar_deuda():
         cliente_id=cliente_id,
         capital=capital,
         interes=interes,
-        interes_mora=interes_mora,
         deuda_total=deuda_total,
         fecha=fecha,
         fecha_vencimiento=fecha_vencimiento,
@@ -406,8 +405,7 @@ def documentation():
 @login_required
 def clientes():
     lista_clientes = Cliente.query.all()
-    deuda = Deuda.query.all()
-    return render_template('clientes.html', clientes=lista_clientes, deuda = deuda)
+    return render_template('clientes.html', clientes=lista_clientes)
 
 @app.route('/buscar_clientes')
 @login_required
@@ -419,6 +417,15 @@ def buscar_clientes():
     for c in clientes:
         # Suma las deudas que no estén finalizadas
         deuda_total = sum(float(d.deuda_total) for d in c.deudas if not d.finalizado)
+        # Tomamos la primera deuda no finalizada (puedes ajustar la lógica según lo que necesites)
+        deuda_no_finalizada = next((d for d in c.deudas if not d.finalizado), None)
+
+        if deuda_no_finalizada:
+            deuda_fecha = deuda_no_finalizada.fecha.strftime("%Y-%m-%d")
+            fecha_vencimiento = deuda_no_finalizada.fecha_vencimiento.strftime("%Y-%m-%d")
+            pagos_relacion_length = len(deuda_no_finalizada.pagos_relacion)
+        else:
+            deuda_fecha = fecha_vencimiento = pagos_relacion_length = None
 
         data.append({
             'name': c.name,
@@ -426,9 +433,12 @@ def buscar_clientes():
             'correo': c.correo,
             'contrato': c.contrato,
             'numero_cuenta': c.numero_cuenta,
-            'telefono':c.telefono,
+            'telefono': c.telefono,
             'id': c.id,
-            'deuda': deuda_total  # Aquí ya mandas el valor calculado
+            'deuda': deuda_total,  # El total de deuda no finalizada
+            'deuda_fecha': deuda_fecha,
+            'deuda_vencimiento': fecha_vencimiento,
+            'deuda_pagos': pagos_relacion_length,
         })
 
     return jsonify(data)

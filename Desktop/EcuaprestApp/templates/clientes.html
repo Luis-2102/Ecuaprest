@@ -56,11 +56,18 @@
             <td class="px-6 py-4 text-center">
               <div class="flex flex-wrap justify-center gap-2">
                 <!-- Pagar Deuda -->
+                
                 <button
-                  onclick="abrirModalPago({{ cliente.id }}, {{ cliente.deudas[0].deuda_total if cliente.deudas else 0 }})"
+                  onclick="abrirModalPago({{ cliente.id }},
+                    {% set deuda_no_finalizada = cliente.deudas|selectattr('finalizado', 'equalto', false)|first %}
+                    {{ deuda_no_finalizada.deuda_total if deuda_no_finalizada else 0 }},
+                    '{{ deuda_no_finalizada.fecha.strftime("%Y-%m-%d") if deuda_no_finalizada else "" }}',
+                    '{{ deuda_no_finalizada.fecha_vencimiento.strftime("%Y-%m-%d") if deuda_no_finalizada else "" }}',
+                    {{ deuda_no_finalizada.pagos_relacion|length if deuda_no_finalizada else 0 }})"
                   class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-md shadow-sm transition duration-200">
                   Pagar Deuda
                 </button>
+
                 <!-- Botón agregar deuda -->
                 <button onclick="abrirModalDeuda({{ cliente.id }})"
                   class="bg-yellow-600 hover:bg-yellow-700 text-white text-sm px-4 py-2 rounded-md shadow-sm transition duration-200">Agregar
@@ -162,7 +169,7 @@
       </div>
       <div class="mb-3">
         <label class="block text-sm font-medium">Plazo (meses)</label>
-        <input type="integer" name="interes_mora" class="w-full border px-3 py-2 rounded-md">
+        <input type="integer" name="plazo" class="w-full border px-3 py-2 rounded-md">
       </div>
       <div class="mb-3">
         <label class="block text-sm font-medium">Interés</label>
@@ -235,48 +242,6 @@
   </div>
 </div>
 
-
-<script>
-  function abrirModalDeuda(clienteId) {
-    document.getElementById("inputClienteDeuda").value = clienteId;
-    document.getElementById("modalDeuda").classList.remove("hidden");
-    document.getElementById("modalDeuda").classList.add("flex");
-  }
-
- 
-  function abrirModalPago(clienteId, deudaTotal, fechaVencimiento) {
-  document.getElementById("inputClientePago").value = clienteId;
-  document.getElementById("montoDeuda").value = `$${parseFloat(deudaTotal).toFixed(2)}`;
-  document.getElementById("fechaVencimiento").value = fechaVencimiento ? fechaVencimiento : 'No disponible';
-
-  document.getElementById("modalPago").classList.remove("hidden");
-  document.getElementById("modalPago").classList.add("flex");
-
-  function cerrarModal(id) {
-    const modal = document.getElementById(id);
-    modal.classList.add("hidden");
-    modal.classList.remove("flex");
-  }
-
-  // Calcular próxima fecha de pago
-  if (fechaVencimiento && plazoDias) {
-    const vencimiento = new Date(fechaVencimiento);
-    vencimiento.setDate(vencimiento.getDate() + plazoDias);
-    const siguientePago = vencimiento.toISOString().split('T')[0]; // formato YYYY-MM-DD
-    document.getElementById("proximoPago").value = siguientePago;
-  } else {
-    document.getElementById("proximoPago").value = "No disponible";
-  }
-
-  document.getElementById("modalPago").classList.remove("hidden");
-  document.getElementById("modalPago").classList.add("flex");
-}
-
-
-
-</script>
-
-
 <!-- JavaScript para búsqueda en tiempo real -->
 <script>
   document.getElementById("busquedaCuenta").addEventListener("input", function () {
@@ -294,6 +259,11 @@
         }
 
         data.forEach(cliente => {
+          // Aquí recibimos el valor de deuda desde el servidor
+          const deudaTotal = cliente.deuda || 0;  // Si no hay deuda, toma 0
+          const fecha = cliente.deuda_fecha || "";  // Asume que la fecha es parte de la respuesta si la manejas
+          const fechaVencimiento = cliente.deuda_vencimiento || "";
+          const pagosRelacionLength = cliente.deuda_pagos || 0;  // Longitud de pagos relacionados
           // Crear la fila principal
           const fila = document.createElement('tr');
           fila.className = "hover:bg-gray-50 transition";
@@ -313,10 +283,11 @@
           </td>
           <td class="px-6 py-4 text-center">
             <div class="flex flex-wrap justify-center gap-2">
-              <button onclick="abrirModalPago(${cliente.id}, ${cliente.deuda || 0})"
-                class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-md shadow-sm transition duration-200">
-                Pagar Deuda
-              </button>
+              ${deudaTotal > 0 ? `
+                    <button onclick="abrirModalPago(${cliente.id}, ${deudaTotal}, '${fecha}', '${fechaVencimiento}', ${pagosRelacionLength})"
+                      class="bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-2 rounded-md shadow-sm transition duration-200">
+                      Pagar Deuda
+                    </button>` : ''}
               <button onclick="abrirModalDeuda(${cliente.id})"
                 class="bg-yellow-600 hover:bg-yellow-700 text-white text-sm px-4 py-2 rounded-md shadow-sm transition duration-200">
                 Agregar Deuda
@@ -425,12 +396,42 @@
     document.getElementById("modalDeuda").classList.add("flex");
   }
 
-  function abrirModalPago(clienteId, deudaTotal) {
+ 
+ function abrirModalPago(clienteId, deudaTotal, fechaInicio, fechaVencimiento, Npagos) {
+    console.log(Npagos)
+    console.log(fechaInicio)
+
     document.getElementById("inputClientePago").value = clienteId;
-    document.getElementById("montoDeuda").value = deudaTotal.toFixed(2) + " USD";
+    document.getElementById("montoDeuda").value = `$${parseFloat(deudaTotal).toFixed(2)}`;
+
     document.getElementById("modalPago").classList.remove("hidden");
     document.getElementById("modalPago").classList.add("flex");
+
+    Npagos = Npagos + 1; // siguiente pago
+
+    // Calcular próxima fecha de pago
+    if (fechaInicio && Npagos) {
+        const fechaBase = new Date(fechaInicio);
+
+        // Sumar meses (uno por cada pago realizado)
+        fechaBase.setMonth(fechaBase.getMonth() + Npagos);
+
+        // Dar formato YYYY-MM-DD
+        const siguientePago = fechaBase.toISOString().split('T')[0];
+
+        // Comparar contra fecha de vencimiento
+        const fechaVenc = new Date(fechaVencimiento);
+
+        if (fechaBase > fechaVenc) {
+            document.getElementById("proximoPago").value = "Pagos finalizados";
+        } else {
+            document.getElementById("proximoPago").value = siguientePago;
+        }
+    } else {
+        document.getElementById("proximoPago").value = "No disponible";
+    }
   }
+
 
   function cerrarModal(id) {
     const modal = document.getElementById(id);

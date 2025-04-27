@@ -121,7 +121,8 @@
     const interestRate = annualInterest / paymentsPerYear;
 
     let totalPayments;
-    if (termUnit === 'años') {
+    console.log(termUnit)
+    if (termUnit == 'años') {
       totalPayments = termLength * paymentsPerYear;
     } else {
       totalPayments = termLength * (12 / (12 / paymentsPerYear));

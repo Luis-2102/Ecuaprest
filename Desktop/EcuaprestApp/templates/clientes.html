@@ -5,20 +5,21 @@
   <h1 class="text-2xl font-bold text-gray-800 mb-6">Clientes</h1>
 
   {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      {% for category, message in messages %}
-        <div class="alert alert-{{ category }} alert-dismissible fade show mt-3" role="alert" id="flashMessage{{ loop.index }}">
-          {{ message }}
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-      {% endfor %}
-    {% endif %}
+  {% if messages %}
+  {% for category, message in messages %}
+  <div class="alert alert-{{ category }} alert-dismissible fade show mt-3" role="alert"
+    id="flashMessage{{ loop.index }}">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  {% endfor %}
+  {% endif %}
   {% endwith %}
 
   <!-- Filtro -->
   <div class="mb-6">
     <label for="busquedaCuenta" class="block text-sm font-medium text-gray-700 mb-1">Buscar por número de
-      cuenta:</label>
+      contrato:</label>
     <input type="text" id="busquedaCuenta" placeholder="Escribe aquí..."
       class="border border-gray-300 rounded-md px-4 py-2 w-full focus:outline-none focus:ring focus:border-blue-400">
   </div>
@@ -32,6 +33,7 @@
             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Nombre</th>
             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Cédula</th>
             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Correo</th>
+            <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Contrato</th>
             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Cuenta</th>
             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600">Documentos</th>
             <th class="px-6 py-3 text-left text-sm font-semibold text-gray-600 text-center">Acciones</th>
@@ -43,6 +45,7 @@
             <td class="px-6 py-4 text-sm text-gray-800">{{ cliente.name }}</td>
             <td class="px-6 py-4 text-sm text-gray-800">{{ cliente.cedula }}</td>
             <td class="px-6 py-4 text-sm text-gray-800">{{ cliente.correo }}</td>
+            <td class="px-6 py-4 text-sm text-gray-800">{{ cliente.contrato }}</td>
             <td class="px-6 py-4 text-sm text-gray-800">{{ cliente.numero_cuenta }}</td>
             <td class="px-6 py-4 text-center">
               <a href="{{ url_for('ver_documento', cliente_id=cliente.id) }}"
@@ -102,6 +105,11 @@
                               value="{{ cliente.numero_cuenta }}" readonly required>
                           </div>
                           <div class="mb-3">
+                            <label for="contrato" class="form-label">Número de Contrato</label>
+                            <input type="text" class="form-control" name="contrato" value="{{ cliente.contrato }}"
+                              readonly required>
+                          </div>
+                          <div class="mb-3">
                             <label for="correo" class="form-label">Correo</label>
                             <input type="email" class="form-control" name="correo" value="{{ cliente.correo }}"
                               required>
@@ -110,6 +118,7 @@
                             <label for="telefono" class="form-label">Teléfono</label>
                             <input type="text" class="form-control" name="telefono" value="{{ cliente.telefono }}">
                           </div>
+
                         </div>
                         <div class="modal-footer">
                           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -152,12 +161,12 @@
         <textarea name="descripcion" class="w-full border px-3 py-2 rounded-md"></textarea>
       </div>
       <div class="mb-3">
-        <label class="block text-sm font-medium">Interés</label>
-        <input type="number" step="0.01" name="interes" class="w-full border px-3 py-2 rounded-md">
+        <label class="block text-sm font-medium">Plazo (meses)</label>
+        <input type="integer" name="interes_mora" class="w-full border px-3 py-2 rounded-md">
       </div>
       <div class="mb-3">
-        <label class="block text-sm font-medium">Interés por Mora</label>
-        <input type="number" step="0.01" name="interes_mora" class="w-full border px-3 py-2 rounded-md">
+        <label class="block text-sm font-medium">Interés</label>
+        <input type="number" step="0.01" name="interes" class="w-full border px-3 py-2 rounded-md">
       </div>
       <div class="flex justify-end gap-2">
         <button type="button" onclick="cerrarModal('modalDeuda')"
@@ -174,27 +183,49 @@
     <h2 class="text-lg font-bold mb-4">Pagar Deuda</h2>
     <form method="POST" action="{{ url_for('pagar_deuda') }}">
       <input type="hidden" name="cliente_id" id="inputClientePago">
-      <!-- Campo solo lectura para mostrar el monto de deuda -->
+      
+      <!-- Campo: Deuda Total Actual -->
       <div class="mb-4">
         <label for="montoDeuda" class="block text-sm font-medium text-gray-700">Deuda Total</label>
         <input type="text" id="montoDeuda" readonly
           class="mt-1 block w-full rounded-md border border-gray-300 bg-gray-100 shadow-sm px-3 py-2">
       </div>
 
+      <!-- Campo: Monto de Abono -->
       <div class="mb-3">
         <label class="block text-sm font-medium">Monto del Abono</label>
         <input type="number" step="0.01" name="abono" class="w-full border px-3 py-2 rounded-md" required>
       </div>
+
+      <!-- Campo: Fecha de Pago -->
       <div class="mb-3">
         <label class="block text-sm font-medium">Fecha de Pago</label>
         <input type="datetime-local" name="fecha_pago" class="w-full border px-3 py-2 rounded-md">
       </div>
+
+      <!-- Campo: Fecha Próximo Pago Estimado -->
+      <div class="mb-3">
+        <label for="proximoPago" class="block text-sm font-medium text-gray-700">Fecha Próximo Pago</label>
+        <input type="text" id="proximoPago" readonly
+          class="mt-1 block w-full rounded-md border border-gray-300 bg-gray-100 shadow-sm px-3 py-2">
+      </div>
+
+      <!-- Campo: Interés por Mora Manual (opcional) -->
+      <div class="mb-3">
+        <label class="block text-sm font-medium">Interés por Mora (%)</label>
+        <input type="number" step="0.01" name="interes_mora_manual"
+          class="w-full border px-3 py-2 rounded-md" placeholder="Ej: 5 (Opcional)">
+      </div>
+
+      <!-- Casilla: Liquidar Deuda -->
       <div class="mb-3">
         <label class="inline-flex items-center">
           <input type="checkbox" name="finalizado" class="form-checkbox">
           <span class="ml-2">Marcar deuda como liquidada</span>
         </label>
       </div>
+
+      <!-- Botones de acción -->
       <div class="flex justify-end gap-2">
         <button type="button" onclick="cerrarModal('modalPago')"
           class="bg-gray-300 px-4 py-2 rounded-md">Cancelar</button>
@@ -204,6 +235,7 @@
   </div>
 </div>
 
+
 <script>
   function abrirModalDeuda(clienteId) {
     document.getElementById("inputClienteDeuda").value = clienteId;
@@ -211,47 +243,67 @@
     document.getElementById("modalDeuda").classList.add("flex");
   }
 
-  function abrirModalPago(clienteId, deudaTotal) {
-    document.getElementById("inputClientePago").value = clienteId;
-    document.getElementById("montoDeuda").value = deudaTotal.toFixed(2) + " USD";
-    document.getElementById("modalPago").classList.remove("hidden");
-    document.getElementById("modalPago").classList.add("flex");
-  }
+ 
+  function abrirModalPago(clienteId, deudaTotal, fechaVencimiento) {
+  document.getElementById("inputClientePago").value = clienteId;
+  document.getElementById("montoDeuda").value = `$${parseFloat(deudaTotal).toFixed(2)}`;
+  document.getElementById("fechaVencimiento").value = fechaVencimiento ? fechaVencimiento : 'No disponible';
+
+  document.getElementById("modalPago").classList.remove("hidden");
+  document.getElementById("modalPago").classList.add("flex");
 
   function cerrarModal(id) {
     const modal = document.getElementById(id);
     modal.classList.add("hidden");
     modal.classList.remove("flex");
   }
+
+  // Calcular próxima fecha de pago
+  if (fechaVencimiento && plazoDias) {
+    const vencimiento = new Date(fechaVencimiento);
+    vencimiento.setDate(vencimiento.getDate() + plazoDias);
+    const siguientePago = vencimiento.toISOString().split('T')[0]; // formato YYYY-MM-DD
+    document.getElementById("proximoPago").value = siguientePago;
+  } else {
+    document.getElementById("proximoPago").value = "No disponible";
+  }
+
+  document.getElementById("modalPago").classList.remove("hidden");
+  document.getElementById("modalPago").classList.add("flex");
+}
+
+
+
 </script>
 
 
 <!-- JavaScript para búsqueda en tiempo real -->
 <script>
-  document.getElementById("busquedaCuenta").addEventListener("input", function() {
-  const query = this.value;
+  document.getElementById("busquedaCuenta").addEventListener("input", function () {
+    const query = this.value;
 
-  fetch(`/buscar_clientes?cuenta=${query}`)
-    .then(response => response.json())
-    .then(data => {
-      const tabla = document.getElementById("tablaClientes");
-      tabla.innerHTML = "";
+    fetch(`/buscar_clientes?contrato=${query}`)
+      .then(response => response.json())
+      .then(data => {
+        const tabla = document.getElementById("tablaClientes");
+        tabla.innerHTML = "";
 
-      if (data.length === 0) {
-        tabla.innerHTML = "<tr><td colspan='6' class='text-center py-4'>No se encontraron resultados</td></tr>";
-        return;
-      }
+        if (data.length === 0) {
+          tabla.innerHTML = "<tr><td colspan='6' class='text-center py-4'>No se encontraron resultados</td></tr>";
+          return;
+        }
 
-      data.forEach(cliente => {
-        // Crear la fila principal
-        const fila = document.createElement('tr');
-        fila.className = "hover:bg-gray-50 transition";
-        
-        // Contenido básico de la fila
-        fila.innerHTML = `
+        data.forEach(cliente => {
+          // Crear la fila principal
+          const fila = document.createElement('tr');
+          fila.className = "hover:bg-gray-50 transition";
+
+          // Contenido básico de la fila
+          fila.innerHTML = `
           <td class="px-6 py-4 text-sm text-gray-800">${cliente.name}</td>
           <td class="px-6 py-4 text-sm text-gray-800">${cliente.cedula}</td>
           <td class="px-6 py-4 text-sm text-gray-800">${cliente.correo}</td>
+          <td class="px-6 py-4 text-sm text-gray-800">${cliente.contrato}</td>
           <td class="px-6 py-4 text-sm text-gray-800">${cliente.numero_cuenta}</td>
           <td class="px-6 py-4 text-center">
             <a href="/ver_documento/${cliente.id}"
@@ -282,12 +334,12 @@
             </div>
           </td>
         `;
-        
-        tabla.appendChild(fila);
-        
-        // Crear el modal de edición separadamente
-        if (!document.getElementById(`modalEditarCliente${cliente.id}`)) {
-          const modalHTML = `
+
+          tabla.appendChild(fila);
+
+          // Crear el modal de edición separadamente
+          if (!document.getElementById(`modalEditarCliente${cliente.id}`)) {
+            const modalHTML = `
             <div class="modal fade" id="modalEditarCliente${cliente.id}" tabindex="-1"
               aria-labelledby="modalEditarClienteLabel${cliente.id}" aria-hidden="true">
               <div class="modal-dialog">
@@ -315,6 +367,10 @@
                         <input type="text" class="form-control" name="numero_cuenta" value="${cliente.numero_cuenta}" readonly required>
                       </div>
                       <div class="mb-3">
+                        <label class="form-label">Número de Contrato</label>
+                        <input type="text" class="form-control" name="numero_cuenta" value="${cliente.contrato}" readonly required>
+                      </div>
+                      <div class="mb-3">
                         <label class="form-label">Correo</label>
                         <input type="email" class="form-control" name="correo" value="${cliente.correo}" required>
                       </div>
@@ -332,71 +388,71 @@
               </div>
             </div>
           `;
-          
-          // Agregar el modal al body
-          const modalContainer = document.createElement('div');
-          modalContainer.innerHTML = modalHTML;
-          document.body.appendChild(modalContainer.firstElementChild);
-          
-          // Inicializar el modal de Bootstrap
-          new bootstrap.Modal(document.getElementById(`modalEditarCliente${cliente.id}`));
-        }
-      });
-      
-      // Agregar event listeners a los botones de editar
-      document.querySelectorAll('.editar-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const clienteId = this.getAttribute('data-id');
-          const modalId = `modalEditarCliente${clienteId}`;
-          const modalElement = document.getElementById(modalId);
-          
-          if (modalElement) {
-            const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
-            modalInstance.show();
+
+            // Agregar el modal al body
+            const modalContainer = document.createElement('div');
+            modalContainer.innerHTML = modalHTML;
+            document.body.appendChild(modalContainer.firstElementChild);
+
+            // Inicializar el modal de Bootstrap
+            new bootstrap.Modal(document.getElementById(`modalEditarCliente${cliente.id}`));
           }
         });
+
+        // Agregar event listeners a los botones de editar
+        document.querySelectorAll('.editar-btn').forEach(btn => {
+          btn.addEventListener('click', function () {
+            const clienteId = this.getAttribute('data-id');
+            const modalId = `modalEditarCliente${clienteId}`;
+            const modalElement = document.getElementById(modalId);
+
+            if (modalElement) {
+              const modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+              modalInstance.show();
+            }
+          });
+        });
+      })
+      .catch(error => {
+        console.error('Error al buscar clientes:', error);
       });
-    })
-    .catch(error => {
-      console.error('Error al buscar clientes:', error);
-    });
-});
+  });
 
-// Mantén las funciones existentes para los demás modales
-function abrirModalDeuda(clienteId) {
-  document.getElementById("inputClienteDeuda").value = clienteId;
-  document.getElementById("modalDeuda").classList.remove("hidden");
-  document.getElementById("modalDeuda").classList.add("flex");
-}
+  // Mantén las funciones existentes para los demás modales
+  function abrirModalDeuda(clienteId) {
+    document.getElementById("inputClienteDeuda").value = clienteId;
+    document.getElementById("modalDeuda").classList.remove("hidden");
+    document.getElementById("modalDeuda").classList.add("flex");
+  }
 
-function abrirModalPago(clienteId, deudaTotal) {
-  document.getElementById("inputClientePago").value = clienteId;
-  document.getElementById("montoDeuda").value = deudaTotal.toFixed(2) + " USD";
-  document.getElementById("modalPago").classList.remove("hidden");
-  document.getElementById("modalPago").classList.add("flex");
-}
+  function abrirModalPago(clienteId, deudaTotal) {
+    document.getElementById("inputClientePago").value = clienteId;
+    document.getElementById("montoDeuda").value = deudaTotal.toFixed(2) + " USD";
+    document.getElementById("modalPago").classList.remove("hidden");
+    document.getElementById("modalPago").classList.add("flex");
+  }
 
-function cerrarModal(id) {
-  const modal = document.getElementById(id);
-  modal.classList.add("hidden");
-  modal.classList.remove("flex");
-}
+  function cerrarModal(id) {
+    const modal = document.getElementById(id);
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  }
 </script>
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
-    setTimeout(function() {
+  document.addEventListener("DOMContentLoaded", function () {
+    setTimeout(function () {
       // Seleccionamos todos los elementos con la clase 'alert' que son los mensajes flash
       const flashMessages = document.querySelectorAll('.alert');
-      
+
       // Ocultamos los mensajes después de 10 segundos (10,000 milisegundos)
-      flashMessages.forEach(function(msg) {
+      flashMessages.forEach(function (msg) {
         msg.style.transition = "opacity 1s ease-out"; // Añadimos una animación de desvanecimiento
         msg.style.opacity = 0; // Hacemos que el mensaje se desvanezca
       });
 
       // Después de 1 segundo, eliminamos el mensaje del DOM
-      setTimeout(function() {
-        flashMessages.forEach(function(msg) {
+      setTimeout(function () {
+        flashMessages.forEach(function (msg) {
           msg.remove(); // Eliminar completamente el mensaje del DOM
         });
       }, 1000); // Elimina el mensaje después de 1 segundo (para que se vea la animación)

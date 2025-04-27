@@ -113,6 +113,10 @@
                               <input type="text" class="form-control" name="cedula" required>
                             </div>
                             <div class="mb-3">
+                              <label for="contrato" class="form-label">Contrato</label>
+                              <input type="text" class="form-control" name="contrato" required>
+                            </div>
+                            <div class="mb-3">
                               <label for="cedula" class="form-label">Pdf con cédula y papel de votacion</label>
                               <input type="file" name="archivo" accept="application/pdf" required>
                             </div>
@@ -154,6 +158,7 @@
                       <tr>
                         <th>Cliente</th>
                         <th>Cedula</th>
+                        <th>Contrato</th>
                         <th>Numero de Cuenta</th>
                         <th>Estado</th>
                         <th>Accion</th>
@@ -171,6 +176,9 @@
                         </td>
                         <td>
                           <h6>{{ cliente.cedula }}</h6>
+                        </td>
+                        <td>
+                          <h6>{{ cliente.contrato }}</h6>
                         </td>
                         <td>
                           <div>

@@ -10,6 +10,7 @@ class Cliente(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     cedula = db.Column(db.String, nullable=False)
+    contrato = db.Column(db.String, nullable=False)
     numero_cuenta = db.Column(db.String, nullable=False)
     correo = db.Column(db.String, unique=True, nullable=False)
     telefono = db.Column(db.String)
@@ -45,7 +46,8 @@ class Deuda(db.Model):
     cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'), nullable=False)
     capital = db.Column(db.Numeric, nullable=False)  # Monto sin interés
     interes = db.Column(db.Numeric)  # En porcentaje: ej. 5 = 5%
-    interes_mora = db.Column(db.Numeric)
+    plazo = db.Column(db.Integer,nullable=False)
+    fecha_vencimiento = db.Column(db.Date, nullable=False)
     deuda_total = db.Column(db.Numeric, nullable=False)  # Capital + intereses
     fecha = db.Column(db.Date, nullable=False)
     descripcion = db.Column(db.Text)
@@ -59,6 +61,7 @@ class Pago(db.Model):
     cliente_id = db.Column(db.Integer, db.ForeignKey('clientes.id'), nullable=False)
     deuda_id = db.Column(db.Integer, db.ForeignKey('deudas.id'), nullable=False)
     abono = db.Column(db.Numeric, nullable=False)
+    interes_mora = db.Column(db.Numeric)
     fecha_pago = db.Column(db.DateTime, default=datetime.utcnow)
     
     

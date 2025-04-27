@@ -9,25 +9,21 @@ from decimal import Decimal
 from sqlalchemy import func
 import pytz
 import locale
+MAXIMO_DIAS_MORA = 30
+
 
 api = Blueprint('api', __name__)
 app = Flask(__name__)
 app.secret_key = 'ecuaprest_secret_key'  
 
-
 app.config.from_object(Config)  # 👈 Carga la configuración desde config.py
 db.init_app(app)  # 👈 Aquí se enlaza Flask con SQLAlchemy
-
-# Zona horaria local (cambia según tu región)
 zona_horaria = pytz.timezone('America/Guayaquil')
-
-
 
 @app.route('/verificar_cuenta/<numero_cuenta>')
 def verificar_cuenta(numero_cuenta):
     existe = Cliente.query.filter_by(numero_cuenta=str(numero_cuenta)).first() is not None
     return jsonify({'existe': existe})
-
 
 # Login required decorator
 def login_required(f):
@@ -95,6 +91,7 @@ def login():
 def añadir_cliente():
     name = request.form['name']
     cedula = request.form['cedula']
+    contrato = request.form['contrato']
     numero_cuenta = str(request.form['numero_cuenta'])
     correo = request.form['correo']
     telefono = request.form['telefono']
@@ -107,6 +104,7 @@ def añadir_cliente():
     nuevo_cliente = Cliente(
         name=name,
         cedula=cedula,
+        contrato=contrato,
         numero_cuenta=numero_cuenta,
         correo=correo,
         telefono=telefono
@@ -148,17 +146,24 @@ def ver_documento(cliente_id):
 @app.route('/agregar_deuda', methods=['POST'])
 def agregar_deuda():
     cliente_id = request.form['cliente_id']
-    capital = float(request.form['deuda_total'])
-    fecha = request.form['fecha']
+    capital = Decimal(request.form['deuda_total'])
+    fecha = datetime.strptime(request.form['fecha'], "%Y-%m-%d").date()
     descripcion = request.form.get('descripcion', '')
-    interes = float(request.form.get('interes') or 0)
-    interes_mora = float(request.form.get('interes_mora') or 0)
+    interes = Decimal(request.form.get('interes') or 0)
+    interes_mora = Decimal(request.form.get('interes_mora') or 0)
+    plazo = int(request.form.get('plazo') or 0)
 
+    # Calcular montos de interés
     interes_monto = (capital * interes) / 100
     mora_monto = (capital * interes_mora) / 100
-    deuda_total = capital + interes_monto + mora_monto
 
-    finalizado = bool(request.form.get('finalizado'))  # <- Aquí va
+    # Calcular fecha de vencimiento
+    fecha_vencimiento = fecha + timedelta(days=plazo)
+
+    # Calcular deuda total (capital + interés normal)
+    deuda_total = capital + interes_monto
+
+    finalizado = bool(request.form.get('finalizado'))
 
     nueva_deuda = Deuda(
         cliente_id=cliente_id,
@@ -166,26 +171,29 @@ def agregar_deuda():
         interes=interes,
         interes_mora=interes_mora,
         deuda_total=deuda_total,
-        fecha=datetime.strptime(fecha, "%Y-%m-%d"),
+        fecha=fecha,
+        fecha_vencimiento=fecha_vencimiento,
+        plazo=plazo,
         descripcion=descripcion,
-        finalizado=finalizado  # <- Usamos aquí
+        finalizado=finalizado
     )
 
     db.session.add(nueva_deuda)
     db.session.commit()
+
     cliente = Cliente.query.get(cliente_id)
     registrar_actividad(
-        accion='Agrego Deuda',
-        descripcion=f"Se agrego una deuda de: {deuda_total} USD ,al cliente {cliente.name} con numero de cuenta: {cliente.numero_cuenta}"
+        accion='Agregó Deuda',
+        descripcion=f"Se agregó una deuda de {deuda_total} USD al cliente {cliente.name} (Cuenta: {cliente.numero_cuenta})"
     )
-    
+
     flash('Deuda agregada correctamente.', 'success')
     return redirect(url_for('clientes'))
 
 @app.route('/pagar_deuda', methods=['POST'])
 def pagar_deuda():
     cliente_id = request.form['cliente_id']
-    abono = float(request.form['abono'])
+    abono = Decimal(request.form['abono'])
     fecha_pago = request.form.get('fecha_pago')
 
     deuda = Deuda.query.filter_by(cliente_id=cliente_id, finalizado=False).first()
@@ -193,32 +201,47 @@ def pagar_deuda():
         flash('No se encontró deuda activa para este cliente.', 'danger')
         return redirect(url_for('clientes'))
 
+    fecha_pago_dt = datetime.strptime(fecha_pago, "%Y-%m-%dT%H:%M") if fecha_pago else datetime.utcnow()
+
+    # Calcular días de retraso desde la fecha de vencimiento
+    dias_retraso = (fecha_pago_dt.date() - deuda.fecha_vencimiento).days
+
+    interes_mora_total = Decimal(0)
+
+    if dias_retraso > 0:
+        dias_retraso_aplicado = min(dias_retraso, MAXIMO_DIAS_MORA)
+        interes_mora_total = (deuda.capital * Decimal(deuda.interes_mora or 0) / 100) * dias_retraso_aplicado
+        deuda.deuda_total += interes_mora_total
+
+    # Registrar el nuevo pago
     nuevo_pago = Pago(
         cliente_id=cliente_id,
         deuda_id=deuda.id,
         abono=abono,
-        fecha_pago=datetime.strptime(fecha_pago, "%Y-%m-%dT%H:%M") if fecha_pago else datetime.utcnow()
+        interes_mora=interes_mora_total,
+        fecha_pago=fecha_pago_dt
     )
     db.session.add(nuevo_pago)
 
-    # Restar abono al total de la deuda
-    deuda.deuda_total -=  Decimal(str(abono))
+    # Restar el abono del total de la deuda
+    deuda.deuda_total -= abono
 
-    # Si se marcó como liquidada o el total llegó a 0, actualiza el estado
+    # Marcar como finalizada si el total es cero o si se marcó manualmente
     if request.form.get('finalizado') or deuda.deuda_total <= 0:
         deuda.finalizado = True
         deuda.deuda_total = max(deuda.deuda_total, 0)  # Evitar negativos
 
     db.session.commit()
-    
+
     cliente = Cliente.query.get(cliente_id)
     registrar_actividad(
-        accion='Agrego Pago',
-        descripcion=f"Se agrego un pago de: {abono} USD ,al cliente {cliente.name} con numero de cuenta: {cliente.numero_cuenta}"
+        accion='Agregó Pago',
+        descripcion=f"Se agregó un pago de {abono} USD al cliente {cliente.name} (Cuenta: {cliente.numero_cuenta})"
     )
-    
+
     flash('Pago registrado correctamente.', 'success')
     return redirect(url_for('comprobante_pago', pago_id=nuevo_pago.id))
+
 
 
 @app.route('/editar_cliente/<int:cliente_id>', methods=['POST'])
@@ -230,6 +253,7 @@ def editar_cliente(cliente_id):
 
     cliente.name = request.form['name']
     cliente.cedula = request.form['cedula']
+    cliente.contrato = request.form['contrato']
     cliente.correo = request.form['correo']
     cliente.numero_cuenta = request.form['numero_cuenta']
     cliente.telefono = request.form['telefono']
@@ -388,8 +412,8 @@ def clientes():
 @app.route('/buscar_clientes')
 @login_required
 def buscar_clientes():
-    cuenta = request.args.get('cuenta', '')
-    clientes = Cliente.query.filter(Cliente.numero_cuenta.ilike(f"%{cuenta}%")).all()
+    contrato = request.args.get('contrato', '')
+    clientes = Cliente.query.filter(Cliente.contrato.ilike(f"%{contrato}%")).all()
 
     data = []
     for c in clientes:
@@ -400,6 +424,7 @@ def buscar_clientes():
             'name': c.name,
             'cedula': c.cedula,
             'correo': c.correo,
+            'contrato': c.contrato,
             'numero_cuenta': c.numero_cuenta,
             'telefono':c.telefono,
             'id': c.id,
@@ -408,9 +433,9 @@ def buscar_clientes():
 
     return jsonify(data)
 
-@app.route('/buscar-cliente/<numero_cuenta>')
-def buscar_cliente(numero_cuenta):
-    cliente = Cliente.query.filter_by(numero_cuenta=numero_cuenta).first()
+@app.route('/buscar-cliente/<contrato>')
+def buscar_cliente(contrato):
+    cliente = Cliente.query.filter_by(contrato=contrato).first()
     if cliente:
         return jsonify({
             'name': cliente.name,

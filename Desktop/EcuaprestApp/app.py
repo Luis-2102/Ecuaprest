@@ -68,7 +68,33 @@ def tiempo_relativo(fecha):
 def index():
     lista_clientes = Cliente.query.order_by(Cliente.id.desc()).limit(5).all()
     actividades = Actividad.query.order_by(Actividad.fecha.desc()).all()
-    return render_template('index.html',clientes=lista_clientes, actividad=actividades)
+    cl = Cliente.query.all()
+    c = []
+    for cliente in cl:
+        
+        deudas_activas = [deuda for deuda in cliente.deudas if not deuda.finalizado]
+
+        if deudas_activas:
+            deuda = deudas_activas[0]  # Tomamos la primera deuda activa
+            fecha_base = deuda.fecha
+            pagos_deuda = [pago for pago in cliente.pagos if pago.deuda_id == deuda.id]
+            numero_pagos = len(pagos_deuda)
+            meses_a_sumar = numero_pagos + 1  # 0 pagos = 1 mes
+            nueva_fecha = fecha_base + relativedelta(months=meses_a_sumar)
+
+            hoy = datetime.today().date()
+            dias_restantes = (nueva_fecha - hoy).days
+
+            c.append({
+                'nombre': cliente.name,
+                'fecha_calculada': nueva_fecha,
+                'dias_restantes': dias_restantes
+            })
+
+    c.sort(
+        key=lambda x: x['dias_restantes']
+    )
+    return render_template('index.html',clientes=lista_clientes, actividad=actividades, c=c)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

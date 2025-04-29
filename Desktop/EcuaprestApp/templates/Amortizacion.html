@@ -1,5 +1,39 @@
 {% extends "base.html" %}
-{% block style %}<link rel="stylesheet" href="static/css/amortizacion.css">{% endblock %}
+{% block style %}<link rel="stylesheet" href="static/css/amortizacion.css">
+<style>
+  .print-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  .print-btn {
+    background-color: #4CAF50;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .print-btn:hover {
+    background-color: #45a049;
+  }
+  .search-btn {
+    background-color: rgb(31, 59, 179);
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .search-btn:hover {
+    background-color: #0b7dda;
+  }
+  @media print {
+    .no-print {
+      display: none;
+    }
+  }
+</style>{% endblock %}
 {% block contenido %}
  <div class="container">
   <div class="calculator-form">
@@ -7,7 +41,10 @@
       <!-- Filtro por número de contrato -->
       <div class="form-group">
         <label for="numero-cuenta">Número de contrato:</label>
-        <input type="text" id="numero-cuenta" name="numero-cuenta" placeholder="Buscar por número de contrato" onblur="buscarCliente()">
+        <div style="display: flex; gap: 10px;">
+          <input type="text" id="numero-cuenta" name="numero-cuenta" placeholder="Buscar por número de contrato">
+          <button type="button" onclick="buscarCliente()" class="search-btn">Buscar</button>
+        </div>
       </div>
 
       <!-- Datos del cliente -->
@@ -33,7 +70,6 @@
         <label for="payment-period">Periodo de pago:</label>
         <select id="payment-period" name="payment-period">
           <option value="semanal">semanal</option>
-          <option value="quincenal">quincenal</option>
           <option value="mensual">mensual</option>
         </select>
       </div>
@@ -44,7 +80,7 @@
       <div class="form-group">
         <label>Plazo:</label>
         <div>
-          <input type="number" id="term-length" name="term-length" placeholder="Número">
+          <input type="number" id="term-length" name="term-length" placeholder="Ingresa aqui...">
           <select id="term-unit" name="term-unit">
             <option value="meses">Meses</option>
             <option value="años">Año/s</option>
@@ -58,7 +94,10 @@
 
   <div class="amortization-table">
     <h3>Tabla de amortizaciones</h3>
-    <button onclick="printAmortization()" class="no-print">Imprimir tabla</button>
+    <div class="print-buttons no-print">
+      <button onclick="printAmortization()" class="print-btn">Imprimir información</button>
+      
+    </div>
     <div class="table-responsive">
       <table>
         <thead>
@@ -115,17 +154,22 @@
 
     let paymentsPerYear;
     if (paymentPeriod === 'semanal') paymentsPerYear = 52;
-    else if (paymentPeriod === 'quincenal') paymentsPerYear = 26;
     else paymentsPerYear = 12;
 
     const interestRate = annualInterest / paymentsPerYear;
 
     let totalPayments;
-    console.log(termUnit)
-    if (termUnit == 'años') {
+    console.log(termUnit);
+    if (termUnit === 'años') {
       totalPayments = termLength * paymentsPerYear;
-    } else {
-      totalPayments = termLength * (12 / (12 / paymentsPerYear));
+    } else if (termUnit === 'meses') {
+      if (paymentPeriod === 'semanal') {
+        // Para pagos semanales: aproximadamente 4.33 semanas por mes
+        totalPayments = termLength * (52/12);
+      } else {
+        // Para pagos mensuales
+        totalPayments = termLength;
+      }
     }
 
     const monthlyPayment = (amount * interestRate) / (1 - Math.pow(1 + interestRate, -totalPayments));
@@ -161,77 +205,115 @@
     }
   }
 
-  function printAmortization() {
-  const clienteDatos = `
-    <div style="margin-bottom: 20px;">
-      <h2 style="text-align: center;">Datos del Cliente</h2>
-      <p><strong>Número de Contrato:</strong> ${document.getElementById('numero-cuenta').value}</p>
-      <p><strong>Nombre:</strong> ${document.getElementById('nombre-cliente').value}</p>
-      <p><strong>Cédula:</strong> ${document.getElementById('cedula-cliente').value}</p>
-      <p><strong>Fecha:</strong> ${document.getElementById('date').value}</p>
-      <p><strong>Monto:</strong> $${parseFloat(document.getElementById('amount').value).toFixed(2)}</p>
-      <p><strong>Periodo de Pago:</strong> ${document.getElementById('payment-period').value}</p>
-      <p><strong>Interés Anual:</strong> ${parseFloat(document.getElementById('interest').value).toFixed(2)}%</p>
-      <p><strong>Plazo:</strong> ${document.getElementById('term-length').value} ${document.getElementById('term-unit').value}</p>
-    </div>
-  `;
-
-  const tabla = document.querySelector('.amortization-table').cloneNode(true);
-  
-  // Elimina el botón de imprimir dentro de la copia
-  const botonImprimir = tabla.querySelector('.no-print');
-  if (botonImprimir) {
-    botonImprimir.remove();
+  function getClienteDatos() {
+    return `
+      <div style="margin-bottom: 20px;">
+        <h2 style="text-align: center;">Datos del Cliente</h2>
+        <p><strong>Número de Contrato:</strong> ${document.getElementById('numero-cuenta').value}</p>
+        <p><strong>Nombre:</strong> ${document.getElementById('nombre-cliente').value}</p>
+        <p><strong>Cédula:</strong> ${document.getElementById('cedula-cliente').value}</p>
+        <p><strong>Fecha:</strong> ${document.getElementById('date').value}</p>
+        <p><strong>Monto:</strong> ${parseFloat(document.getElementById('amount').value).toFixed(2)}</p>
+        <p><strong>Periodo de Pago:</strong> ${document.getElementById('payment-period').value}</p>
+        <p><strong>Interés Anual:</strong> ${parseFloat(document.getElementById('interest').value).toFixed(2)}%</p>
+        <p><strong>Plazo:</strong> ${document.getElementById('term-length').value} ${document.getElementById('term-unit').value}</p>
+      </div>
+    `;
   }
 
-  // Crear un iframe oculto
-  const iframe = document.createElement('iframe');
-  iframe.style.display = 'none';
-  document.body.appendChild(iframe);
-  
-  // Obtener el contenido actual de la hoja de estilo
-  const styleSheets = document.styleSheets;
-  let styles = '';
-  
-  // Intentar extraer estilos inline para asegurar que se apliquen
-  for (let i = 0; i < styleSheets.length; i++) {
-    try {
-      const cssRules = styleSheets[i].cssRules || styleSheets[i].rules;
-      for (let j = 0; j < cssRules.length; j++) {
-        styles += cssRules[j].cssText;
-      }
-    } catch (e) {
-      console.log("No se pueden acceder a las reglas CSS de:", styleSheets[i].href);
-    }
-  }
-  
-  // Escribir el documento con estilos incluidos
-  iframe.contentWindow.document.open();
-  iframe.contentWindow.document.write(`
-    <html>
-      <head>
-        <title>Tabla de Amortización</title>
-        <link rel="stylesheet" href="/static/css/amortizacion.css">
-      </head>
-      <body>
-        ${clienteDatos}
-        ${tabla.outerHTML}
-      </body>
-    </html>
-  `);
-  iframe.contentWindow.document.close();
-  
-  // Dar tiempo para que se carguen los estilos antes de imprimir
-  setTimeout(() => {
-    iframe.contentWindow.focus();
-    iframe.contentWindow.print();
+  function crearImpresion(incluirFormulario) {
+    const clienteDatos = getClienteDatos();
     
-    // Eliminar el iframe después
+    const tabla = document.querySelector('.amortization-table').cloneNode(true);
+    
+    // Elimina los botones de imprimir dentro de la copia
+    const botonesImprimir = tabla.querySelector('.no-print');
+    if (botonesImprimir) {
+      botonesImprimir.remove();
+    }
+
+    // Crear un iframe oculto
+    const iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+    
+    // Obtener el contenido actual de la hoja de estilo
+    const styleSheets = document.styleSheets;
+    let styles = '';
+    
+    // Intentar extraer estilos inline para asegurar que se apliquen
+    for (let i = 0; i < styleSheets.length; i++) {
+      try {
+        const cssRules = styleSheets[i].cssRules || styleSheets[i].rules;
+        for (let j = 0; j < cssRules.length; j++) {
+          styles += cssRules[j].cssText;
+        }
+      } catch (e) {
+        console.log("No se pueden acceder a las reglas CSS de:", styleSheets[i].href);
+      }
+    }
+    
+    let contenidoFormulario = '';
+    if (incluirFormulario) {
+      const formulario = document.querySelector('.calculator-form').cloneNode(true);
+      
+      // Eliminar botones del formulario para la impresión
+      const botones = formulario.querySelectorAll('button');
+      botones.forEach(boton => boton.style.display = 'none');
+      
+      contenidoFormulario = `
+        <div style="margin-bottom: 30px;">
+          <h2 style="text-align: center;">Parámetros del Préstamo</h2>
+          ${formulario.outerHTML}
+        </div>
+      `;
+    }
+    
+    // Escribir el documento con estilos incluidos
+    iframe.contentWindow.document.open();
+    iframe.contentWindow.document.write(`
+      <html>
+        <head>
+          <title>Información del Préstamo</title>
+          <link rel="stylesheet" href="/static/css/amortizacion.css">
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }
+            th { background-color: #f2f2f2; }
+            h2 { color: #333; }
+            .print-header { text-align: center; margin-bottom: 30px; }
+          </style>
+        </head>
+        <body>
+          <div class="print-header">
+            <h1>Información de Préstamo</h1>
+            <p>Fecha de impresión: ${new Date().toLocaleDateString()}</p>
+          </div>
+          ${clienteDatos}
+          ${contenidoFormulario}
+          ${tabla.outerHTML}
+        </body>
+      </html>
+    `);
+    iframe.contentWindow.document.close();
+    
+    // Dar tiempo para que se carguen los estilos antes de imprimir
     setTimeout(() => {
-      document.body.removeChild(iframe);
-    }, 1000);
-  }, 500);
-}
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+      
+      // Eliminar el iframe después
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 1000);
+    }, 500);
+  }
+
+  function printAmortization() {
+    crearImpresion(false);
+  }
+  
 
 </script>
 {% endblock %}
